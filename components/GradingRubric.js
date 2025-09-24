@@ -6,7 +6,7 @@ export default function GradingRubric({ studentName, file }) {
     const [isFeedbackRecording, setIsFeedbackRecording] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
 
-    return <div className="flex flex-col absolute top-2 right-2 shadow-md rounded-lg bg-white">
+    return <div className="flex flex-col absolute top-2 right-2 shadow-md rounded-lg bg-white max-w-lg">
         <div className="shadow-md p-4 flex flex-col gap-1">
             <h2 className="text-sm text-gray-400">Current grading</h2>
             <div className="flex gap-1">

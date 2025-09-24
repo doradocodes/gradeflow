@@ -7,11 +7,13 @@ import Button from "@/components/Button";
 import {useState, useEffect} from "react";
 import {useRecorder} from "@/hooks/recorderHooks";
 import {Menu, MenuButton, MenuItem, MenuItems} from "@headlessui/react"; // your hook
+import Markdown from 'react-markdown';
 
 export default function Recorder({}) {
     const {start, pause, resume, stop, status} = useRecorder();
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioURL, setAudioURL] = useState(null);
+    const [audioFile, setAudioFile] = useState(null);
     const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState(null);
     const [isTranscribing, setIsTranscribing] = useState(false);
@@ -62,6 +64,8 @@ export default function Recorder({}) {
         const filename = `recording-${Date.now()}.mp3`; // you can change the naming scheme
         const file = new File([blob], filename, {type: "audio/mp3"});
 
+        setAudioFile(file);
+
         const url = URL.createObjectURL(file);
         console.log("Audio URL:", url);
         await setAudioURL(url);
@@ -77,9 +81,9 @@ export default function Recorder({}) {
         // Upload to Cloudinary
         const cloudinaryURL = "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
         const formData = new FormData();
-        formData.append("file", audioURL);
+        formData.append("file", audioFile);
         formData.append("upload_preset", "gradeflow");
-        
+
         const response = await fetch(cloudinaryURL, {
             method: "POST",
             body: formData,
@@ -90,9 +94,7 @@ export default function Recorder({}) {
         // save audio url to firebase db
         try {
             await addDoc(collection(db, "recordings"), {
-                audioUrl,
-                transcript: data.text,
-                summary: data.summary,
+                url: data.url,
                 createdAt: new Date(),
             });
             console.log("Recording saved to Firebase ✅");
@@ -144,8 +146,8 @@ export default function Recorder({}) {
                                 {devices.map((d) => (
                                     <MenuItem key={d.deviceId}>
                                         <button onClick={() => setSelectedDeviceId(d.deviceId)}
-                                                className="group flex w-full items-center gap-2 rounded-lg px-1 py-1.5 data-focus:bg-white/10 text-center cursor-pointer">
-                                            {d.label || `Microphone ${d.deviceId}`}
+                                                className="group flex w-full items-center gap-2 rounded-lg px-1 py-1.5 data-focus:bg-white/10 cursor-pointer">
+                                            <span className="text-left">{d.label || `Microphone ${d.deviceId}`}</span>
                                             {selectedDeviceId === d.deviceId && <CheckIcon className="size-4"/>}
                                         </button>
                                     </MenuItem>
@@ -197,7 +199,17 @@ export default function Recorder({}) {
                 :
                 <>
                     {transcript && <p>{transcript}</p>}
-                    {summary && <p>{summary}</p>}
+                    {summary &&
+                        <Markdown
+                            components={{
+                                h2(props) {
+                                    const {node, ...rest} = props
+                                    return <h1 className="font-bold" {...rest} />
+                                }
+                            }}
+                        >
+                            {summary}
+                        </Markdown>}
                 </>
             }
 
