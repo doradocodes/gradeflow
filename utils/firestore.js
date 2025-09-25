@@ -1,17 +1,40 @@
 import {db} from "@/utils/firebase";
-import {addDoc, collection, getDocs, doc, updateDoc } from "firebase/firestore";
+import {addDoc, collection, getDocs, doc, updateDoc, query, where, getDoc } from "firebase/firestore";
 
-export async function getAssignments() {
+export async function getAssignments(teacherId) {
     try {
-        const snapshot = await getDocs(collection(db, "assignments"));
+        const q = query(
+            collection(db, "assignments"),
+            where("teacherId", "==", teacherId)
+        );
+
+        const snapshot = await getDocs(q);
+
         return snapshot.docs
-            .map(doc => ({
+            .map((doc) => ({
                 id: doc.id,
                 ...doc.data(),
             }))
             .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
     } catch (error) {
         console.error("Error fetching assignments:", error);
+    }
+}
+
+export async function getAssignment(id) {
+    try {
+        const docRef = doc(db, "assignments", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return {
+                id: docSnap.id,
+                ...docSnap.data(),
+            };
+        }
+        console.log("No such assignment!");
+        return null;
+    } catch (error) {
+        console.error("Error fetching assignment:", error);
     }
 }
 
@@ -46,3 +69,50 @@ export async function updateAssignment(id, updates) {
     }
 }
 
+export async function createSubmission(data) {
+    console.log(data);
+    try {
+        await addDoc(collection(db, "submissions"), {
+            ...data,
+            submittedAt: new Date(),
+        });
+        console.log("Submission created successfully ✅");
+    } catch (err) {
+        console.error("Error creating submission:", err);
+    }
+}
+
+export async function getSubmissions(id) {
+    try {
+        const docRef = doc(db, "submissions", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return {
+                id: docSnap.id,
+                ...docSnap.data(),
+            };
+        }
+        console.log("No such submission!");
+        return null;
+    } catch (error) {
+        console.error("Error fetching submission:", error);
+        return null;
+    }
+}
+
+export async function getSubmissionsByAssignment(assignmentId) {
+    try {
+        const q = query(
+            collection(db, "submissions"),
+            where("assignmentId", "==", assignmentId)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+    } catch (error) {
+        console.error("Error fetching submissions:", error);
+        return [];
+    }
+}

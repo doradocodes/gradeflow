@@ -1,3 +1,5 @@
+'use client'
+
 import {useState} from "react";
 import Recorder from "@/components/Recorder";
 import RubricCards from "@/components/RubricCards";
