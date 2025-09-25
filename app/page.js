@@ -1,31 +1,21 @@
 "use client"; // because we’re using hooks + fetch
 
 import { useState } from "react";
+import {useAuth} from "@/components/AuthProvider";
+import Button from "@/components/Button";
+import {redirect} from "next/navigation";
 
 export default function HomePage() {
-    const [transcript, setTranscript] = useState(null);
-    const [summary, setSummary] = useState(null);
+    const { user, loading } = useAuth();
 
-    async function handleTranscribe() {
-        const res = await fetch("/api/summarize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                audioUrl: "https://assembly.ai/wildfires.mp3", // or user-uploaded audio
-            }),
-        });
 
-        const data = await res.json();
-        setTranscript(data.text);
-        setSummary(data.summary);
-    }
+    if (loading) return <p>Loading...</p>;
+
 
     return (
         <div>
-            <h1>AssemblyAI Test</h1>
-            <button className="rounded-full bg-black text-white" onClick={handleTranscribe}>Transcribe</button>
-            {transcript && <p>Transcript: {transcript}</p>}
-            {summary && <p>Summary: {summary}</p>}
+            <h1>Welcome, {user.email}</h1>
+            <Button onClick={() => redirect('/dashboard')}>Go to Dashboard</Button>
         </div>
     );
 }
