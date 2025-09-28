@@ -25,13 +25,21 @@ export default function DeliverablesForm({ assignmentId, prevData }) {
         await updateAssignment(assignmentId, data)
     }
 
-    return <form onSubmit={onSubmit} className="border border-gray-300 rounded-md p-2 max-w-xl">
+    return <form onSubmit={onSubmit} className="bg-white rounded-lg p-4 max-w-xl">
         <h2 className="text-xl font-bold mb-4">Add a new deliverable</h2>
-        <div className="grid gap-2 grid-cols-2 p-4">
-            <label htmlFor="name">Name</label>
-            <input className="border border-gray-300 rounded-md" type="text" id="name" name="name" required/>
-            <label htmlFor="fileType">File Type</label>
-            <select className="border border-gray-300 rounded-md" id="fileType" name="fileType" required>
+        <div className="grid gap-2">
+            <input
+                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                type="text"
+                id="name"
+                name="name"
+                required
+                placeholder="Name"
+            />
+            <select
+                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+
+                id="fileType" name="fileType" required>
                 <option value="pdf">PDF</option>
                 <option value="url">URL</option>
                 <option value="word">Word Document</option>
@@ -39,8 +47,10 @@ export default function DeliverablesForm({ assignmentId, prevData }) {
                 <option value="powerpoint">Powerpoint</option>
                 <option value="other">Other</option>
             </select>
-            <label htmlFor="required">Required?</label>
-            <input className="border border-gray-300 rounded-md" type="checkbox" id="required" name="required" required/>
+            <div className={"flex gap-2 mb-4"}>
+                <label htmlFor="required">Required?</label>
+                <input className="border border-gray-300 rounded-md" type="checkbox" id="required" name="required" required/>
+            </div>
         </div>
         <Button type="submit">Create Assignment</Button>
     </form>

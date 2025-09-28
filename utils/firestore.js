@@ -1,5 +1,5 @@
 import {db} from "@/utils/firebase";
-import {addDoc, collection, getDocs, doc, updateDoc, query, where, getDoc } from "firebase/firestore";
+import {addDoc, collection, getDocs, doc, updateDoc, query, where, getDoc, deleteDoc } from "firebase/firestore";
 
 export async function getAssignments(teacherId) {
     try {
@@ -74,11 +74,11 @@ export async function createSubmission(data) {
     try {
         await addDoc(collection(db, "submissions"), {
             ...data,
-            submittedAt: new Date(),
         });
         console.log("Submission created successfully ✅");
     } catch (err) {
         console.error("Error creating submission:", err);
+        throw err;
     }
 }
 
@@ -114,5 +114,33 @@ export async function getSubmissionsByAssignment(assignmentId) {
     } catch (error) {
         console.error("Error fetching submissions:", error);
         return [];
+    }
+}
+
+export async function getSubmission(id) {
+    try {
+        const docRef = doc(db, "submissions", id);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            return {
+                id: docSnap.id,
+                ...docSnap.data(),
+            };
+        }
+        console.log("No such submission!");
+        return null;
+    } catch (error) {
+        console.error("Error fetching submission:", error);
+        return null;
+    }
+}
+
+export async function deleteSubmission(id) {
+    try {
+        const ref = doc(db, "submissions", id);
+        await deleteDoc(ref);
+        console.log('Deleted submission with ID: ', id);
+    } catch (err) {
+        console.error("Error deleting submission:", err);
     }
 }

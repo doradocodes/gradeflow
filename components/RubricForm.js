@@ -24,15 +24,32 @@ export default function RubricForm({ assignmentId, prevData }) {
         await updateAssignment(assignmentId, data)
     }
 
-    return <form onSubmit={onSubmit} className="border border-gray-300 rounded-md p-2 max-w-xl">
+    return <form onSubmit={onSubmit} className="rounded-md p-4 max-w-xl">
         <h2 className="text-xl font-bold mb-4">Add a new rubric category</h2>
-        <div className="grid gap-2 grid-cols-2 p-4">
-            <label htmlFor="categoryName">Category Name</label>
-            <input className="border border-gray-300 rounded-md" type="text" id="categoryName" name="categoryName" required/>
-            <label htmlFor="maxPoints">Max Points</label>
-            <input className="border border-gray-300 rounded-md" type="number" id="maxPoints" name="maxPoints" required/>
-            <label htmlFor="criteria">Criteria (bullet points)</label>
-            <textarea className="border border-gray-300 rounded-md" id="criteria" name="criteria" required/>
+        <div className="grid gap-2">
+            <input
+                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                type="text"
+                id="categoryName"
+                name="categoryName"
+                required
+                placeholder="Category Name"
+            />
+            <input
+                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                type="number"
+                id="maxPoints"
+                name="maxPoints"
+                required
+                placeholder="Max Points"
+            />
+            <textarea
+                className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
+                id="criteria"
+                name="criteria"
+                required
+                placeholder="Criteria (bullet points)"
+            />
         </div>
         <Button type="submit">Create Assignment</Button>
     </form>

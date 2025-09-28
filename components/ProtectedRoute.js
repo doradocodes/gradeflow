@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
+import Nav from "@/components/Nav";
 
 export default function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -15,5 +16,8 @@ export default function ProtectedRoute({ children }) {
         return null;
     }
 
-    return children;
+    return <>
+        <Nav/>
+        {children}
+    </>;
 }

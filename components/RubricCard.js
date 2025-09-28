@@ -47,9 +47,10 @@ function RubricCardDisplay({category, points, criteria}) {
             <p className="font-bold">{points} points</p>
         </div>
         <div>
-            <ul className="list-disc pl-5">
-                {criteria.map((c, index) => <li key={index}>{c}</li>)}
-            </ul>
+            {/*<ul className="list-disc pl-5">*/}
+            {/*    {criteria.map((c, index) => <li key={index}>{c}</li>)}*/}
+            {/*</ul>*/}
+            <p>{criteria}</p>
         </div>
     </>;
 }

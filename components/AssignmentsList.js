@@ -10,35 +10,28 @@ import Link from "next/link";
 import Button from "@/components/Button";
 import {ArrowRightIcon} from "@heroicons/react/16/solid";
 import SubmissionsTable from "@/components/SubmissionsTable";
+import RubricCards from "@/components/RubricCards";
+import Tag from "@/components/Tag";
 
 const CATEGORIES = [
     {
         name: 'Rubric',
         getComponent: (data) => {
             return <TabPanel key="Rubric" className="p-3">
-                <ul>
-                    {Object.keys(data.rubric)?.map((rubricKey) => (
-                        <li key={rubricKey} className="p-2 border rounded">
-                            <h3>{rubricKey}</h3>
-                            <p>{data.rubric[rubricKey].maxPoints} points</p>
-                            <p>{data.rubric[rubricKey].criteria}</p>
-                        </li>
-                    ))}
-                </ul>
-                <RubricForm assignmentId={data.id} prevData={data} />
+                <RubricCards assignment={data} />
+
             </TabPanel>
         }
     },
     {
         name: 'Deliverables',
         getComponent: (data) => {
-            return <TabPanel key="Deliverables" className="p-3">
-                <ul>
+            return <TabPanel key="Deliverables" className="p-3 grid grid-cols-2 gap-4">
+                <ul className="mb-4">
+                    <h2 className="font-bold text-xl">Deliverables</h2>
                     {data.deliverables?.map((deliverable) => (
-                        <li key={deliverable.name} className="p-2 border rounded">
-                            <h3>{deliverable.name}</h3>
-                            <p>Type: {deliverable.fileType}</p>
-                            <p>{deliverable.required ? 'Required' : 'Optional'}</p>
+                        <li key={deliverable.name} className="list-decimal list-inside">
+                            {deliverable.name} ({deliverable.fileType}) <Tag color="blue">{deliverable.required ? 'Required' : 'Optional'}</Tag>
                         </li>
                     ))}
                 </ul>
@@ -50,7 +43,6 @@ const CATEGORIES = [
         name: 'Submissions',
         getComponent: (data) => {
             return <TabPanel key="Submissions" className="p-3">
-                <h2 className="text-xl font-bold">Submissions</h2>
                 <SubmissionsTable assignmentId={data.id} />
             </TabPanel>
         },
@@ -70,15 +62,12 @@ export default function AssignmentsList() {
     }, []);
 
     return <>
-        <h1>Assignments</h1>
         <ul className="my-4">
             {assignments.map(a => (
-                <li key={a.id} className="p-2 border rounded">
-                    <h2 className="font-bold">{a.title}</h2>
-                    <p>{a.courseName}</p>
-                    <p>{a.description}</p>
-                    <p>{a.dueDate}</p>
-                    <p><Link href={`/submit/${a.id}`}>Submission Link</Link></p>
+                <li key={a.id} className="rounded-lg overflow-hidden bg-slate-200 p-4 relative">
+                    <h2 className="font-bold inline-block">{a.courseName} - {a.title}</h2> <Tag color="blue">Due {a.dueDate}</Tag>
+                    <p className="my-2">{a.description}</p>
+                    <Button className="mb-4"><Link href={`/submit/${a.id}`}>Submission Link</Link></Button>
                     <TabGroup>
                         <TabList className="flex gap-4">
                             {CATEGORIES.map(({ name }) => (
