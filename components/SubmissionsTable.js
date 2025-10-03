@@ -93,7 +93,7 @@ export default function SubmissionsTable({assignmentId}) {
                 </Table.Body>
             </Table>
         </TableCard.Root>
-        <div className="divider w-full border-b border-gray-200"></div>
+        <div className="w-full border-b border-gray-200"></div>
         <SubmissionForm assignmentId={assignmentId}/>
     </>
 }

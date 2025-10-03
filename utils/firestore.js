@@ -89,6 +89,18 @@ export async function updateAssignment(id, updates) {
     }
 }
 
+export async function deleteAssignment(id) {
+    try {
+        const ref = doc(db, "assignments", id);
+        await deleteDoc(ref);
+        console.log('✅ Deleted assignment with ID: ', id);
+        return true;
+    } catch (err) {
+        console.error("Error deleting assignment:", err);
+        return false;
+    }
+}
+
 export async function createSubmission(data) {
     console.log(data);
     try {

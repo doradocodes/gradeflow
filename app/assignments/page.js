@@ -1,17 +1,15 @@
 'use client'
 
 import ProtectedRoute from "@/components/ProtectedRoute";
-import AssignmentsForm from "@/components/AssignmentsForm";
 import AssignmentsList from "@/components/AssignmentsList";
 import {useState} from "react";
 import {NativeSelect} from "@/components/base/select/select-native";
 import { Tabs } from "@/components/application/tabs/tabs";
 import {Button} from "@/components/base/buttons/button";
 import {PlusCircle} from "@untitledui/icons";
+import AssignmentsForm from "@/components/AssignmentsForm";
 import SlideoutMenu from "@/components/SlideoutMenu";
-import SubmissionsTable from "@/components/SubmissionsTable";
-
-
+import {createAssignment} from "@/utils/firestore";
 
 
 export default function AssignmentsPage() {
@@ -29,7 +27,7 @@ export default function AssignmentsPage() {
     }
 
     return <ProtectedRoute>
-        <div className="w-full max-w-container py-8 md:px-8 mx-auto">
+        <div className="w-full max-w-container py-8 md:px-8 mx-auto z-10">
             <h1 className="text-2xl font-bold mb-2">Assignments</h1>
             <p className="mb-4 text-gray-500">View all your assignments.</p>
             <div className="mb-4 flex items-center justify-between">
@@ -50,19 +48,23 @@ export default function AssignmentsPage() {
                     onClick={() => setOpenAssignmentsForm(true)}
                 >Add assignment</Button>
             </div>
+            <SlideoutMenu
+                open={openAssignmentsForm}
+                onClose={() => setOpenAssignmentsForm(false)}
+                title={`Create a new assignment`}
+                description="Fill in the details to create a new assignment."
+            >
+                <AssignmentsForm
+                    onSubmit={async (values) => {
+                        await createAssignment(values);
+                    }}
+                    onClose={() => setOpenAssignmentsForm(false)} />
+            </SlideoutMenu>
             {selectedTabIndex === "current_assignments" ?
                 <AssignmentsList title="Current Assignments" date={new Date()} direction={"after"}/>
                 :
                 <AssignmentsList title="Past Assignments" date={new Date()} direction={"before"}/>
             }
         </div>
-        <SlideoutMenu
-            open={openAssignmentsForm}
-            onClose={() => setOpenAssignmentsForm(false)}
-            title={`Create new assignment`}
-            description="Fill in the details to create a new assignment."
-        >
-            <AssignmentsForm />
-        </SlideoutMenu>
     </ProtectedRoute>
 }

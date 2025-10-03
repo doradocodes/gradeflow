@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {useAuth} from "@/components/AuthProvider";
 import {redirect} from "next/navigation";
+import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 
 export default function HomePage() {
     const { user, loading } = useAuth();

@@ -2,7 +2,7 @@ import clsx from "clsx";
 import {CloseButton} from "@/components/base/buttons/close-button";
 import {useEffect} from "react";
 
-export default function Modal({open, onClose, title, description, children}) {
+export default function Modal({open, onClose, icon, title, description, children}) {
     useEffect(() => {
         if (open) {
             document.body.classList.add("overflow-hidden");
@@ -11,30 +11,44 @@ export default function Modal({open, onClose, title, description, children}) {
         }
     }, [open]);
 
+    const handleClose = (e) => {
+        e.stopPropagation()
+        onClose(false);
+    }
+
     return (
         <div
             className={clsx(
-                "fixed inset-0 z-50 transition-opacity duration-300 overflow-hidden flex items-center justify-center",
-                open ? "bg-black/50 opacity-100" : "bg-black/0 opacity-0 pointer-events-none"
+                "fixed inset-0 overflow-hidden flex items-center justify-center transition-all duration-300 delay-100",
+                open ? 'z-50' : 'z-[-1]'
             )}
         >
             <div
                 className={clsx(
-                    "h-1/3 w-1/3 bg-white transition-transform duration-300 overflow-y-auto flex flex-col rounded-lg shadow-lg",
+                    "absolute top-0 left-0 h-full w-full transition-all duration-300 pointer-events-none",
+                    open ? "bg-black/50" : "bg-black/0"
+                )}
+                onClick={handleClose}
+            ></div>
+            <div
+                className={clsx(
+                    "w-1/3 bg-white transition-all duration-300 delay-300 overflow-y-auto flex flex-col rounded-lg shadow-lg",
                     open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
                 )}
             >
-                <div className="flex justify-between p-4 border-b border-gray-100">
+                <div className="flex justify-between p-4">
                     <div className="flex flex-col">
-                        {title && <h2 className="text-xl font-bold">{title}</h2>}
+                        <div className="flex items-center gap-2">
+                            {icon && <div className="">{icon}</div>}
+                            {title && <h2 className="text-xl font-bold">{title}</h2>}
+                        </div>
                         {description && <p className="text-gray-500">{description}</p>}
                     </div>
-                    <CloseButton size="md" onClick={() => onClose(false)}/>
+                    <CloseButton className="absolute top-2 right-2" size="md" onClick={() => onClose(false)}/>
                 </div>
-                <div className="h-full overflow-y-auto p-4">
+                <div className="overflow-y-auto p-4">
                     {children}
                 </div>
-
             </div>
         </div>
     );
