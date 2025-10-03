@@ -1,5 +1,3 @@
-import {PlusIcon} from "@heroicons/react/16/solid";
-
 export default function RubricCard({
                                        isPlaceholder = false,
                                        addCard,
@@ -7,7 +5,8 @@ export default function RubricCard({
                                        category,
                                        points,
                                        criteria,
-                                       onSave
+                                       onSave,
+                                       color
                                    }) {
 
     const onSaveCard = () => {
@@ -19,7 +18,7 @@ export default function RubricCard({
         }
     }
 
-    return <div className="bg-rose-50 p-4 rounded-lg min-h-[200px] min-w-[150px] flex flex-col h-full">
+    return <div className={`${color} p-4 rounded-2xl min-h-[200px] min-w-[150px] flex flex-col h-full`}>
         {isPlaceholder && <RubricCardPlaceholder addCard={addCard}/>}
         {!isPlaceholder && !isEditing && <RubricCardDisplay category={category} points={points} criteria={criteria}/>}
         {!isPlaceholder && isEditing &&
@@ -36,28 +35,29 @@ export default function RubricCard({
 
 function RubricCardPlaceholder({addCard}) {
     return <div className="flex justify-center items-center h-full">
-        <PlusIcon className="size-6" onClick={addCard}/>
     </div>;
 }
 
 function RubricCardDisplay({category, points, criteria}) {
+    const formatCriteria = (criteria) => {
+        const criteriaArr = criteria.split('\n');
+        return criteriaArr.map((c, index) => <p key={index}>{c}</p>)
+    }
+
     return <>
-        <div className="flex gap-5 justify-between align-middle mb-4">
+        <div className="mb-4">
             <h2 className="font-bold">{category}</h2>
-            <p className="font-bold">{points} points</p>
+            <p className="font-bold opacity-50 text-sm">{points} points</p>
         </div>
         <div>
-            {/*<ul className="list-disc pl-5">*/}
-            {/*    {criteria.map((c, index) => <li key={index}>{c}</li>)}*/}
-            {/*</ul>*/}
-            <p>{criteria}</p>
+            <p>{formatCriteria(criteria)}</p>
         </div>
     </>;
 }
 
 function RubricCardEdit({category, points, criteria, setCategory, setPoints, setCriteria}) {
     return <>
-        <div className="flex gap-5 justify-between align-middle mb-4">
+        <div className="mb-4">
             <input type="text" className="border border-gray-300 rounded-lg p-2" placeholder="Category"
                    defaultValue={category || ''} onChange={(e) => setCategory(e.target.value)}/>
             <div>

@@ -46,7 +46,7 @@ export default function IframeCanvas({ url }) {
     return (
         <div
             ref={canvasRef}
-            className="w-screen h-screen overflow-hidden bg-gray-100 cursor-grab flex items-center justify-center"
+            className="w-screen h-screen overflow-hidden bg-gray-100 cursor-grab flex items-center justify-center fixed top-0 left-0 z-[-1]"
             onWheel={onWheel}
             onMouseDown={onMouseDown}
             onMouseMove={onMouseMove}

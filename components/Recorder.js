@@ -2,15 +2,21 @@
 
 import { db } from "@/utils/firebase";
 import { collection, addDoc } from "firebase/firestore";
-import {CheckIcon, MicrophoneIcon} from "@heroicons/react/16/solid";
-import Button from "@/components/Button";
-import {useState, useEffect} from "react";
-import {useRecorder} from "@/hooks/recorderHooks";
-import {Menu, MenuButton, MenuItem, MenuItems} from "@headlessui/react"; // your hook
-import Markdown from 'react-markdown';
+import { useState, useEffect, useRef } from "react";
+import { useRecorder } from "@/hooks/recorderHooks";
+import Markdown from "react-markdown";
+import { Button } from "@/components/base/buttons/button";
+import { Dropdown } from "@/components/base/dropdown/dropdown";
+import {
+    Check,
+    ChevronDown,
+    Microphone01,
+    PauseSquare,
+    StopSquare,
+} from "@untitledui/icons";
 
-export default function Recorder({}) {
-    const {start, pause, resume, stop, status} = useRecorder();
+export default function Recorder({ rubric = "" }) {
+    const { start, pause, resume, stop, status } = useRecorder();
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioURL, setAudioURL] = useState(null);
     const [audioFile, setAudioFile] = useState(null);
@@ -19,6 +25,10 @@ export default function Recorder({}) {
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [transcript, setTranscript] = useState(null);
     const [summary, setSummary] = useState(null);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+
+    const analyserRef = useRef(null);
+    const audioCtxRef = useRef(null);
 
     // Get list of audio input devices
     useEffect(() => {
@@ -54,20 +64,24 @@ export default function Recorder({}) {
     }, [status]);
 
     const handleStart = async () => {
-        await start({deviceId: selectedDeviceId}); // pass deviceId to the hook
+        await start({ deviceId: selectedDeviceId });
+        setupSpeakingDetection(selectedDeviceId);
     };
 
     const handleStop = async () => {
         const blob = await stop();
 
-        // Wrap blob in a File with a custom name
-        const filename = `recording-${Date.now()}.mp3`; // you can change the naming scheme
-        const file = new File([blob], filename, {type: "audio/mp3"});
+        if (audioCtxRef.current) {
+            audioCtxRef.current.close();
+            audioCtxRef.current = null;
+            analyserRef.current = null;
+        }
+
+        const filename = `recording-${Date.now()}.mp3`;
+        const file = new File([blob], filename, { type: "audio/mp3" });
 
         setAudioFile(file);
-
         const url = URL.createObjectURL(file);
-        console.log("Audio URL:", url);
         await setAudioURL(url);
     };
 
@@ -77,9 +91,43 @@ export default function Recorder({}) {
         return `${m}:${s < 10 ? "0" : ""}${s}`;
     }
 
+    const setupSpeakingDetection = async (deviceId) => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: { deviceId },
+            });
+            const audioCtx = new AudioContext();
+            audioCtxRef.current = audioCtx;
+
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            analyserRef.current = analyser;
+
+            const dataArray = new Uint8Array(analyser.fftSize);
+
+            function detect() {
+                if (!analyserRef.current) return;
+                analyserRef.current.getByteTimeDomainData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                    sum += Math.abs(dataArray[i] - 128);
+                }
+                const avg = sum / dataArray.length;
+                setIsSpeaking(avg > 5); // tweak threshold for sensitivity
+                requestAnimationFrame(detect);
+            }
+
+            detect();
+        } catch (err) {
+            console.error("Mic access denied:", err);
+        }
+    };
+
     const submitFeedback = async () => {
-        // Upload to Cloudinary
-        const cloudinaryURL = "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
+        const cloudinaryURL =
+            "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
         const formData = new FormData();
         formData.append("file", audioFile);
         formData.append("upload_preset", "gradeflow");
@@ -89,15 +137,12 @@ export default function Recorder({}) {
             body: formData,
         });
         const data = await response.json();
-        console.log("Cloudinary response:", data);
 
-        // save audio url to firebase db
         try {
             await addDoc(collection(db, "recordings"), {
                 url: data.url,
                 createdAt: new Date(),
             });
-            console.log("Recording saved to Firebase ✅");
         } catch (err) {
             console.error("Error saving to Firebase:", err);
         }
@@ -105,14 +150,15 @@ export default function Recorder({}) {
         setIsTranscribing(true);
         await handleTranscribe(data.url);
         setIsTranscribing(false);
-    }
+    };
 
     const handleTranscribe = async (audioUrl) => {
         const res = await fetch("/api/summarize", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
                 audioUrl,
+                rubric,
             }),
         });
 
@@ -124,49 +170,67 @@ export default function Recorder({}) {
 
     return (
         <div className="flex flex-col gap-4">
-            {status === "idle" && !audioURL ?
-                <Button
-                    className="w-full"
-                    onClick={handleStart}
-                >Record feedback</Button>
-                :
+            {status === "idle" && !audioURL ? (
+                <Button className="w-full" onClick={handleStart}>
+                    Record feedback
+                </Button>
+            ) : (
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                        <Menu>
-                            <MenuButton
-                                className="inline-flex items-center text-sm/6 font-semibold shadow-inner shadow-white/10 focus:not-data-focus:outline-none data-focus:outline data-focus:outline-white cursor-pointer">
-                                <MicrophoneIcon className="size-4"/>
-                            </MenuButton>
+                        <Microphone01
+                            size={20}
+                            className={`transition-opacity duration-100 ${
+                                isSpeaking ? "opacity-100" : "opacity-10"
+                            }`}
+                        />
 
-                            <MenuItems
-                                transition
-                                anchor="bottom start"
-                                className="w-52 origin-top-right rounded-xl border border-white/5 bg-white shadow-md p-1 text-xs/6 transition duration-100 ease-out [--anchor-gap:--spacing(1)] focus:outline-none data-closed:scale-95 data-closed:opacity-0"
+                        <Dropdown.Root>
+                            <Button
+                                className="group"
+                                color="secondary"
+                                iconTrailing={ChevronDown}
                             >
-                                {devices.map((d) => (
-                                    <MenuItem key={d.deviceId}>
-                                        <button onClick={() => setSelectedDeviceId(d.deviceId)}
-                                                className="group flex w-full items-center gap-2 rounded-lg px-1 py-1.5 data-focus:bg-white/10 cursor-pointer">
-                                            <span className="text-left">{d.label || `Microphone ${d.deviceId}`}</span>
-                                            {selectedDeviceId === d.deviceId && <CheckIcon className="size-4"/>}
-                                        </button>
-                                    </MenuItem>
-                                ))}
-                            </MenuItems>
-                        </Menu>
+                                {devices.find((d) => d.deviceId === selectedDeviceId)?.label ||
+                                    "Select microphone"}
+                            </Button>
+
+                            <Dropdown.Popover>
+                                <Dropdown.Menu>
+                                    {devices?.map((d) => (
+                                        <Dropdown.Item
+                                            key={d.deviceId}
+                                            onClick={() => setSelectedDeviceId(d.deviceId)}
+                                            icon={selectedDeviceId === d.deviceId ? Check : null}
+                                        >
+                                          <span className="text-left">
+                                            {d.label || `Microphone ${d.deviceId}`}
+                                          </span>
+                                        </Dropdown.Item>
+                                    ))}
+                                </Dropdown.Menu>
+                            </Dropdown.Popover>
+                        </Dropdown.Root>
 
                         <span>{secondsToMinutesAndSeconds(recordingTime)}</span>
                     </div>
 
                     {status === "recording" && (
-                        <>
-                            <Button className="text-xs" onClick={pause}>
-                                Pause
-                            </Button>
-                            <Button className="text-xs" onClick={handleStop}>
-                                Stop
-                            </Button>
-                        </>
+                        <div className="flex flex-nowrap items-center">
+                            <Button
+                                color="tertiary"
+                                size="md"
+                                iconLeading={<PauseSquare data-icon />}
+                                aria-label="Pause"
+                                onClick={pause}
+                            />
+                            <Button
+                                color="tertiary"
+                                size="md"
+                                iconLeading={<StopSquare data-icon />}
+                                aria-label="Stop"
+                                onClick={handleStop}
+                            />
+                        </div>
                     )}
                     {status === "paused" && (
                         <>
@@ -179,40 +243,45 @@ export default function Recorder({}) {
                         </>
                     )}
                 </div>
-            }
+            )}
 
             {status === "idle" && audioURL && !isTranscribing && (
                 <>
                     <div className="flex gap-2 flex-nowrap items-center">
                         <span>Playback</span>
-                        <audio controls src={audioURL} className="w-full"/>
+                        <audio controls src={audioURL} className="w-full" />
                     </div>
                     <div>
-                        <Button className="w-full cursor-pointer" onClick={submitFeedback}>Submit feedback</Button>
-                        <p className="text-sm italic text-gray-400 mt-1">Your recording be saved, categorized and turned into written feedback automatically.</p>
+                        <Button className="w-full cursor-pointer" onClick={submitFeedback}>
+                            Submit feedback
+                        </Button>
+                        <p className="text-sm italic text-gray-400 mt-1">
+                            Your recording be saved, categorized and turned into written
+                            feedback automatically.
+                        </p>
                     </div>
                 </>
             )}
 
-            {isTranscribing ?
+            {isTranscribing ? (
                 <p className="text-center">Transcribing...</p>
-                :
+            ) : (
                 <>
                     {transcript && <p>{transcript}</p>}
-                    {summary &&
+                    {summary && (
                         <Markdown
                             components={{
                                 h2(props) {
-                                    const {node, ...rest} = props
-                                    return <h1 className="font-bold" {...rest} />
-                                }
+                                    const { node, ...rest } = props;
+                                    return <h1 className="font-bold" {...rest} />;
+                                },
                             }}
                         >
                             {summary}
-                        </Markdown>}
+                        </Markdown>
+                    )}
                 </>
-            }
-
+            )}
         </div>
     );
 }

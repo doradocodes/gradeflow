@@ -1,7 +1,15 @@
 import {db} from "@/utils/firebase";
 import {addDoc, collection, getDocs, doc, updateDoc, query, where, getDoc, deleteDoc } from "firebase/firestore";
 
-export async function getAssignments(teacherId) {
+/**
+ * Get assignments by teacher, optionally filtered by date.
+ *
+ * @param {string} teacherId - The teacher's ID.
+ * @param {Object} options - Extra filters.
+ * @param {string|Date} [options.date] - A date string or Date object to compare against.
+ * @param {"before"|"after"} [options.direction] - Whether to fetch assignments before or after the date.
+ */
+export async function getAssignments(teacherId, { date, direction } = {}) {
     try {
         const q = query(
             collection(db, "assignments"),
@@ -10,14 +18,26 @@ export async function getAssignments(teacherId) {
 
         const snapshot = await getDocs(q);
 
-        return snapshot.docs
-            .map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }))
-            .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+        let assignments = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        if (date && direction) {
+            const compareDate = date instanceof Date ? date : new Date(date);
+            assignments = assignments.filter((a) =>
+                direction === "before"
+                    ? new Date(a.dueDate) < compareDate
+                    : new Date(a.dueDate) > compareDate
+            );
+        }
+
+        return assignments.sort(
+            (a, b) => new Date(a.dueDate) - new Date(b.dueDate)
+        );
     } catch (error) {
         console.error("Error fetching assignments:", error);
+        return [];
     }
 }
 

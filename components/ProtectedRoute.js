@@ -2,13 +2,14 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
-import Nav from "@/components/Nav";
+import {HeaderNavigationBase} from "@/components/application/app-navigation/header-navigation";
+import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 
 export default function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
     const router = useRouter();
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <LoadingIndicator type="line-simple" size="sm" />;
 
     if (!user) {
         // redirect if not logged in
@@ -16,8 +17,13 @@ export default function ProtectedRoute({ children }) {
         return null;
     }
 
-    return <>
-        <Nav/>
+    return <div className="">
+        <HeaderNavigationBase
+            items={[
+                { label: "Home", href: "/" },
+                { label: "Assignments", href: "/assignments" },
+            ]}
+        />
         {children}
-    </>;
+    </div>;
 }

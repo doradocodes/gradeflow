@@ -8,19 +8,27 @@
     "start": "next start"
   },
   "dependencies": {
-    "@headlessui/react": "^2.2.8",
-    "@heroicons/react": "^2.2.0",
     "@supabase/ssr": "^0.7.0",
+    "@untitledui/file-icons": "^0.0.9",
+    "@untitledui/icons": "^0.0.19",
     "assemblyai": "^4.16.1",
+    "clsx": "^2.1.1",
     "firebase": "^12.3.0",
+    "motion": "^12.23.22",
     "next": "15.5.3",
+    "next-themes": "^0.4.6",
+    "postcss": "^8.5.6",
     "react": "19.1.0",
+    "react-aria-components": "^1.12.2",
     "react-dom": "19.1.0",
     "react-markdown": "^10.1.0",
-    "react-zoom-pan-pinch": "^3.7.0"
+    "react-zoom-pan-pinch": "^3.7.0",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
+    "tailwindcss-react-aria-components": "^2.0.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4"
+    "@tailwindcss/postcss": "^4.1.13",
+    "tailwindcss": "^4.1.13"
   }
 }

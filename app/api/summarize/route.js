@@ -17,21 +17,17 @@ export async function POST(req) {
     const transcript = await client.transcripts.transcribe(params);
 
     // Step 2: Define a summarization prompt.
-    const prompt = `
+    const prompt = body.rubric ? `
     You are evaluating a student's project presentation.
 
     Summarize the following transcript by categorizing the content under the given grading rubric:
     
     Rubric:
-    1. Clarity of Communication (10 points)
-    2. Technical Accuracy (10 points)
-    3. Creativity and Originality (10 points)
-    4. Relevance to the Assignment (10 points)
-    5. Overall Presentation Quality (10 points)
+    ${body.rubric}
     
     For each rubric category, write a short summary (2–3 sentences) and estimate the points earned for that category.
     If a category is not addressed in the transcript, explicitly state "Not addressed."
-    `;
+    ` : '';
 
     // Step 3: Apply LeMUR.
     const { response } = await client.lemur.task({

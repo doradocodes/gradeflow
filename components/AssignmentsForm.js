@@ -1,14 +1,14 @@
 'use client'
 
-import Button from "@/components/Button";
 import {useAuth} from "@/components/AuthProvider";
 import {createAssignment} from "@/utils/firestore";
-import Input from "@/components/Input";
+import {Input} from "@/components/base/input/input";
+import {Button} from "@/components/base/buttons/button";
 
 export default function AssignmentsForm() {
     const { user, loading } = useAuth();
 
-    if (loading) return <p>Loading...</p>;
+    if (loading) return <LoadingIndicator type="line-simple" size="sm" />;
 
     const onSubmit = async (e) => {
         e.preventDefault();
@@ -23,22 +23,13 @@ export default function AssignmentsForm() {
         await createAssignment(data);
     }
 
-    return <form onSubmit={onSubmit} className="bg-white rounded-lg p-4 max-w-xl">
-        <h2 className="font-bold mb-4 text-xl">Add a new assignment</h2>
+    return <form onSubmit={onSubmit} className="">
         <div className="grid gap-4 mb-4">
-            {/*<label htmlFor="courseName">Course Name</label>*/}
-            {/*<input className="border border-gray-300 rounded-md" type="text" id="courseName" name="courseName" required/>*/}
-            {/*<label htmlFor="title">Title</label>*/}
-            {/*<input className="border border-gray-300 rounded-md" type="text" id="title" name="title" required/>*/}
-            {/*<label htmlFor="description">Description</label>*/}
-            {/*<input className="border border-gray-300 rounded-md" type="text" id="description" name="description" required/>*/}
-            {/*<label htmlFor="dueDate">Due Date</label>*/}
-            {/*<input className="border border-gray-300 rounded-md"  type="date" id="dueDate" name="dueDate" required/>*/}
-            <Input type={"text"} name={"courseName"} label={"Course Name"} required />
-            <Input type={"text"} name={"title"} label={"Title"} required />
-            <Input type={"text"} name={"description"} label={"Description"} required />
-            <Input type={"date"} name={"dueDate"} label={"Due Date"} required />
+            <Input isRequired label="Course name" placeholder="Course name" tooltip="The name of the course." name="courseName" type="text" />
+            <Input isRequired label="Title" placeholder="Title" tooltip="The title of the assignment." name="title" type="text" />
+            <Input isRequired label="Description" placeholder="Description" tooltip="The description of the assignment." name="description" type="text" />
+            <Input isRequired label="Due date" placeholder="Due date" tooltip="The due date of the assignment." name="dueDate" type="date" />
         </div>
-        <Button type="submit">Create Assignment</Button>
+        <Button color="primary" size="sm" type="submit">Create new assignment</Button>
     </form>
 }
