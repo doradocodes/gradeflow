@@ -43,23 +43,7 @@ export default function AssignmentsPage() {
                         {(tab) => <Tabs.Item {...tab} />}
                     </Tabs.List>
                 </Tabs>
-                <Button
-                    color="primary" size="sm" iconLeading={<PlusCircle data-icon />}
-                    onClick={() => setOpenAssignmentsForm(true)}
-                >Add assignment</Button>
             </div>
-            <SlideoutMenu
-                open={openAssignmentsForm}
-                onClose={() => setOpenAssignmentsForm(false)}
-                title={`Create a new assignment`}
-                description="Fill in the details to create a new assignment."
-            >
-                <AssignmentsForm
-                    onSubmit={async (values) => {
-                        await createAssignment(values);
-                    }}
-                    onClose={() => setOpenAssignmentsForm(false)} />
-            </SlideoutMenu>
             {selectedTabIndex === "current_assignments" ?
                 <AssignmentsList title="Current Assignments" date={new Date()} direction={"after"}/>
                 :

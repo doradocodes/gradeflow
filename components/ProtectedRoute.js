@@ -19,8 +19,8 @@ export default function ProtectedRoute({ children }) {
 
     return <div className="">
         <HeaderNavigationBase
+            user={user}
             items={[
-                { label: "Home", href: "/" },
                 { label: "Assignments", href: "/assignments" },
             ]}
         />

@@ -19,21 +19,22 @@ export default function Modal({open, onClose, icon, title, description, children
     return (
         <div
             className={clsx(
-                "fixed inset-0 overflow-hidden flex items-center justify-center transition-all duration-300 delay-100",
+                "fixed w-full h-full top-0 left-0 inset-0 overflow-hidden flex items-center justify-center transition-all duration-300",
                 open ? 'z-50' : 'z-[-1]'
             )}
         >
             <div
                 className={clsx(
-                    "absolute top-0 left-0 h-full w-full transition-all duration-300 pointer-events-none",
-                    open ? "bg-black/50" : "bg-black/0"
+                    "absolute top-0 left-0 h-full w-full transition-all duration-300 cursor-pointer backdrop-blur-md",
+                    open ? "bg-overlay/70" : "bg-black/0"
                 )}
                 onClick={handleClose}
             ></div>
             <div
                 className={clsx(
-                    "w-1/3 bg-white transition-all duration-300 delay-300 overflow-y-auto flex flex-col rounded-lg shadow-lg",
-                    open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                    "w-1/2 bg-white transition-all duration-300 overflow-y-auto flex flex-col rounded-lg shadow-lg",
+                    open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
+                    'max-h-[80vh] overflow-y-auto'
                 )}
             >
                 <div className="flex justify-between p-4">

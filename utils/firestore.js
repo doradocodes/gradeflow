@@ -58,7 +58,7 @@ export async function getAssignment(id) {
     }
 }
 
-export async function createAssignment({ userId, courseName, title, description, dueDate }) {
+export async function createAssignment({ userId, courseName, title, description, dueDate, deliverables }) {
     try {
         await addDoc(collection(db, "assignments"), {
             teacherId: userId,
@@ -67,7 +67,7 @@ export async function createAssignment({ userId, courseName, title, description,
             description,
             dueDate,
             rubric: {},
-            deliverables: [],
+            deliverables: deliverables || [],
             createdAt: new Date(),
         });
         console.log("Recording saved to Firebase ✅");
@@ -101,13 +101,24 @@ export async function deleteAssignment(id) {
     }
 }
 
-export async function createSubmission(data) {
-    console.log(data);
+export async function createSubmission(data, notificationRecipient) {
     try {
         await addDoc(collection(db, "submissions"), {
             ...data,
         });
         console.log("Submission created successfully ✅");
+        if (notificationRecipient) {
+            // Then create a notification for the teacher
+            await addDoc(collection(db, "notifications"), {
+                recipientId: notificationRecipient,
+                type: "submission",
+                message: `A ${data.studentName} submitted an assignment.`,
+                link: `/assignments`,
+                createdAt: new Date(),
+                read: false,
+            });
+            console.log("Teacher notified of submission ✅");
+        }
     } catch (err) {
         console.error("Error creating submission:", err);
         throw err;
@@ -176,3 +187,55 @@ export async function deleteSubmission(id) {
         console.error("Error deleting submission:", err);
     }
 }
+
+export async function updateSubmission(id, updates) {
+    try {
+        const ref = doc(db, "submissions", id);
+        await updateDoc(ref, {
+            ...updates,
+            updatedAt: new Date(),
+        });
+        console.log(`Submission ${id} updated ✅`);
+    } catch (err) {
+        console.error("Error updating submission:", err);
+    }
+}
+
+export async function createUser({uuid, name, email}) {
+    try {
+        await addDoc(collection(db, "users"), {
+            uuid,
+            name,
+            email,
+            createdAt: new Date(),
+        });
+        console.log("User created successfully ✅");
+    } catch (error) {
+        console.error("Error creating user:", error);
+    }
+}
+
+export async function updateNotification(id, updates) {
+    try {
+        const ref = doc(db, "notifications", id);
+        await updateDoc(ref, {
+            ...updates,
+            updatedAt: new Date(), // optional timestamp
+        });
+        console.log(`Notification ${id} updated ✅`);
+    } catch (error) {
+
+    }
+}
+
+// export async function createRubricCategory(data) {
+//     try {
+//         await addDoc(collection(db, "rubric"), {
+//             ...data,
+//         });
+//         console.log("Rubric category created successfully ✅");
+//     } catch (err) {
+//         console.error("Error creating rubric category:", err);
+//         throw err;
+//     }
+// }

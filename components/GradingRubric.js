@@ -3,40 +3,90 @@
 import {useEffect, useState} from "react";
 import Recorder from "@/components/Recorder";
 import RubricCards from "@/components/RubricCards";
-import {getAssignment} from "@/utils/firestore";
-import {Select} from "@/components/base/select/select";
-import {CloseButton} from "@/components/base/buttons/close-button";
+import {getAssignment, updateSubmission} from "@/utils/firestore";
 import {Button} from "@/components/base/buttons/button";
-import {Check, ChevronDown, ChevronUp} from "@untitledui/icons";
+import {Check, ChevronDown, ChevronUp, HelpCircle, MagicWand02} from "@untitledui/icons";
 import clsx from "clsx";
 import {Dropdown} from "@/components/base/dropdown/dropdown";
+import Modal from "@/components/Modal";
+import Markdown from "react-markdown";
+import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
+import {Tooltip, TooltipTrigger} from "@/components/base/tooltip/tooltip";
+import FeedbackSummary from "@/components/FeedbackSummary";
 
-export default function GradingRubric({ assingmentId, studentName, currentFile, setCurrentFile }) {
-    const [isFeedbackRecording, setIsFeedbackRecording] = useState(false);
-    const [isRecording, setIsRecording] = useState(false);
+export default function GradingRubric({ submission, assignmentId, studentName, currentFile, setCurrentFile }) {
     const [assignment, setAssignment] = useState(null);
     const [collapsed, setCollapsed] = useState(false);
-
+    const [isTranscribing, setIsTranscribing] = useState(false);
+    const [transcript, setTranscript] = useState(null);
+    const [summary, setSummary] = useState(null);
+    const [isSummarized, setIsSummarized] = useState(false);
 
     useEffect(() => {
         async function load() {
-            const data = await getAssignment(assingmentId);
+            const data = await getAssignment(assignmentId);
             setAssignment(data);
         }
         load();
     }, []);
 
-    const getRubricString = () => {
-        if (!assignment?.rubric) return '';
-        let arr = Object.keys(assignment?.rubric).map((key, i) => {
-            return `${i + 1}. ${key}: ${assignment?.rubric[key].criteria} (${assignment?.rubric[key].maxPoints} points)`
+    const getRubricString = (rubric) => {
+        if (!rubric) return '';
+        let arr = Object.keys(rubric).map((key, i) => {
+            return `${i + 1}. ${key}: ${rubric[key].criteria} (${rubric[key].maxPoints} points)`
         });
         return arr.join('\n');
     }
 
-    if (!assignment) return null;
+    const submitFeedback = async (audioUrl) => {
+        // const cloudinaryURL =
+        //     "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
+        // const formData = new FormData();
+        // formData.append("file", audioFile);
+        // formData.append("upload_preset", "gradeflow");
+        //
+        // // Upload the audio file to Cloudinary
+        // const response = await fetch(cloudinaryURL, {
+        //     method: "POST",
+        //     body: formData,
+        // });
+        // const data = await response.json();
 
-    console.log('current file', currentFile);
+        setIsTranscribing(true);
+        await handleTranscribe(audioUrl);
+        setIsTranscribing(false);
+    };
+
+    const handleTranscribe = async (audioUrl) => {
+        // Summarize the audio using the API
+        const res = await fetch("/api/summarize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                audioUrl,
+                rubric: getRubricString(assignment?.rubric),
+            }),
+        });
+
+        const data = await res.json();
+
+        // Update the submission with the transcription and summary
+        const updatedSubmission = {
+            feedback: {
+                audioUrl: audioUrl,
+                transcript: data.text,
+                summary: data.summary,
+                createdAt: new Date(),
+            }
+        }
+        await updateSubmission(submission.id, updatedSubmission);
+
+        setTranscript(data.text);
+        setSummary(data.summary);
+        setIsSummarized(true);
+    };
+
+    if (!assignment) return null;
 
     return <div className={clsx([
         "flex flex-col fixed z-20 top-20 right-2 shadow-md rounded-lg bg-white max-w-lg transition-all duration-300",
@@ -64,10 +114,10 @@ export default function GradingRubric({ assingmentId, studentName, currentFile, 
 
                 <Dropdown.Popover>
                     <Dropdown.Menu>
-                        {assignment?.deliverables.map((d, index) => (
+                        {submission?.deliverables.map((d, index) => (
                             <Dropdown.Item
                                 key={d.name}
-                                onClick={() => setCurrentFile(d.name)}
+                                onClick={() => setCurrentFile(d)}
                                 icon={d.name === currentFile?.name ? Check : null}
                             >
                                 <div className="flex items-center gap-2">
@@ -80,10 +130,26 @@ export default function GradingRubric({ assingmentId, studentName, currentFile, 
             </Dropdown.Root>
         </div>
         <div className="px-4">
-            <RubricCards assignment={assignment} />
+            <RubricCards rubric={assignment.rubric} />
         </div>
         <div className="p-4">
-            <Recorder rubric={getRubricString()} />
+            {isTranscribing ?
+                <div className="text-center flex items-center justify-center gap-2">
+                    <LoadingIndicator type="line-simple" size="sm" /> Transcribing...
+                </div>
+                :
+                <Recorder onEndRecording={submitFeedback} />
+            }
+            {isSummarized &&
+                <Modal
+                    open={isSummarized}
+                    onClose={() => setIsSummarized(false)}
+                    title="Feedback summary"
+                >
+                    <FeedbackSummary submission={submission} />
+                </Modal>
+            }
         </div>
     </div>
 }
+

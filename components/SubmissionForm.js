@@ -1,28 +1,24 @@
 'use client'
 
-import {createSubmission, getAssignment, getAssignments} from "@/utils/firestore";
-import {useEffect, useState} from "react";
+import {createSubmission} from "@/utils/firestore";
+import {useState} from "react";
 import {Input, InputBase} from "@/components/base/input/input";
 import {Button} from "@/components/base/buttons/button";
 import {FileUploadProgressBar} from "@/components/FileUploadProgressBar";
-import {Badge, BadgeIcon} from "@/components/base/badges/badges";
-import {Check, CheckCircle} from "@untitledui/icons";
+import {CheckCircle} from "@untitledui/icons";
 import Modal from "@/components/Modal";
 import {InputGroup} from "@/components/base/input/input-group";
+import clsx from "clsx";
+import {Badge} from "@/components/base/badges/badges";
 
-export default function SubmissionForm({ assignmentId }) {
-    const [assignment, setAssignment] = useState(null);
+export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [submittedAt, setSubmittedAt] = useState(null);
     const [error, setError] = useState(null);
 
-    useEffect(() => {
-        async function load() {
-            const data = await getAssignment(assignmentId);
-            setAssignment(data);
-        }
-        load();
-    }, []);
+    const [studentName, setStudentName] = useState('');
+    const [studentEmail, setStudentEmail] = useState('');
+
 
     const formatURL = (url) => {
         if (url.startsWith('http')) {
@@ -32,81 +28,69 @@ export default function SubmissionForm({ assignmentId }) {
         }
     }
 
-    const onSubmit = async (e) => {
+    const onSubmitForm = async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
-        // convert formData to an object
         const currentDate = new Date();
         const data = {
-            assignmentId: assignmentId,
-            status: currentDate.getTime() < new Date(assignment.dueDate).getTime() ? 'on_time' : 'late',
-            deliverables: [],
-            submittedAt: new Date(),
+            studentName,
+            studentEmail,
+            deliverables: deliverables.map((d, index) => {
+                return {
+                    name: d.name,
+                    value: e.target.elements[`deliverables-${d.name}`].value,
+                    required: d.required,
+                    type: d.fileType,
+                }
+            }),
+            submittedAt: currentDate,
         };
-        formData.forEach((value, key) => {
-            if (key.startsWith('deliverables-')) {
-                data.deliverables.push({
-                    name: key.replace('deliverables-', ''),
-                    value: formatURL(value),
-                    required: assignment.deliverables.find(d => d.name === key.replace('deliverables-', '')).required,
-                    type: assignment.deliverables.find(d => d.name === key.replace('deliverables-', '')).fileType,
-                })
-            } else {
-                data[key] = value;
-            }
-        });
-        console.log(data);
-        try {
-            await createSubmission(data);
+        await onSubmit(data);
+        if (!isInline) {
             setIsSubmitted(true);
             setSubmittedAt(data.submittedAt);
-        } catch (e) {
-            setError(e);
         }
     }
 
-    const getInputPicker = (name, type, index) => {
+    const getInputPicker = (name, type, required, index) => {
         switch(type) {
-            case 'file':
-                return [
-                    <div className="flex items-center gap-1">
-                        <CheckCircle size={20} className="opacity-25"/>
-                        <span className="text-sm">{name}</span>
-                        {/*<Badge type="color" color="brand" size="sm">{type}</Badge>*/}
-                    </div>,
-                    <FileUploadProgressBar />
-                ]
             case 'url':
-                return [
+                return <div>
                     <div className="flex items-center gap-1">
                         <CheckCircle size={20} data-icon className="opacity-25"/>
-                        <span className="text-sm">{name}</span>
-                        {/*<Badge type="color" color="brand" size="sm">{type}</Badge>*/}
-                    </div>,
-                    <InputGroup isRequired >
-                        <InputBase
-                            type={"text"} name={`deliverables-${name}`} required
-                            data-filetype="url"
-                        />
-                    </InputGroup>
-                ]
+                        <span className="text-sm text-secondary font-medium">{name}</span>
+                        <Badge type="color" color="brand" size="sm">{type}</Badge>
+                    </div>
+                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype="url" />
+                </div>
             default:
-                return;
+                return <div>
+                    <div className="flex items-center gap-1">
+                        <CheckCircle size={20} data-icon className="opacity-25"/>
+                        <span className="text-sm text-secondary font-medium">{name}</span>
+                        <Badge type="color" color="brand" size="sm">{type}</Badge>
+                    </div>
+                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype={type} />
+                </div>
         }
     }
 
-    return <div className="bg-white rounded-lg w-full">
-        <form onSubmit={onSubmit} className="p-4">
-            <div className="grid grid-cols-[1.5fr_2fr] gap-8">
+    return <div className="">
+        <form onSubmit={onSubmitForm} className="">
+            <div className={
+                clsx(
+                    "grid gap-8 mb-4",
+                    isInline ? "grid-cols-1" : "grid-cols-[1.5fr_2fr]"
+                )
+            }>
                 <div className="flex flex-col gap-2">
-                    <h2 className="font-bold mb-4">Student Information</h2>
-                    <Input type={"text"} name={"studentName"} label={"Student Name"} required />
-                    <Input type={"email"} name={"studentEmail"} label={"Student Email"} required />
+                    <h2 className="font-bold text-secondary mb-4">Student Information</h2>
+                    <Input type={"text"} name={"studentName"} label={"Student Name"} required onChange={(value) => setStudentName(value)} />
+                    <Input type={"email"} name={"studentEmail"} label={"Student Email"} required onChange={(value) => setStudentEmail(value)} />
                 </div>
                 <div className="flex flex-col gap-2">
-                    <h2 className="font-bold mb-4">Deliverables</h2>
-                    {assignment?.deliverables.map((d, index) => (
-                        <div key={d.name} className="flex flex-col gap-1.5">{getInputPicker(d.name, d.fileType, index)}</div>
+                    <h2 className="font-bold text-secondary mb-4">Deliverables</h2>
+                    {deliverables.map((d, index) => (
+                        <div key={d.name} className="flex flex-col gap-1.5">{getInputPicker(d.name, d.fileType, d.required, index)}</div>
                     ))}
                 </div>
             </div>
@@ -116,11 +100,11 @@ export default function SubmissionForm({ assignmentId }) {
         <Modal
             open={isSubmitted}
             onClose={() => setIsSubmitted(false)}
-            title={"Submission successful!"}
+            // title={"Submission successful!"}
         >
-            <div className="w-full h-full flex flex-col justify-center items-center">
+            <div className="w-full h-full min-h-60 flex flex-col justify-center items-center pb-4">
                 <h1 className="text-center font-bold text-3xl mb-4">Thank you for your submission!</h1>
-                <p className="text-center">Your files were submitted at {submittedAt?.toLocaleString()}</p>
+                <p className="text-center">Your files were submitted at <b>{submittedAt?.toLocaleString()}</b>.</p>
                 <p className="text-center">You can now close this page.</p>
             </div>
         </Modal>

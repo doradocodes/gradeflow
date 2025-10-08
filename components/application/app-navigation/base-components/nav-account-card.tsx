@@ -1,5 +1,6 @@
 "use client";
 
+import {auth} from "@/utils/firebase";
 import type { FC, HTMLAttributes } from "react";
 import { useCallback, useEffect, useRef } from "react";
 import type { Placement } from "@react-types/overlays";
@@ -12,6 +13,7 @@ import { Button } from "@/components/base/buttons/button";
 import { RadioButtonBase } from "@/components/base/radio-buttons/radio-buttons";
 import { useBreakpoint } from "@/hooks/use-breakpoint";
 import { cx } from "@/utils/cx";
+import {signOut} from "firebase/auth";
 
 type NavAccountType = {
     /** Unique identifier for the nav item. */
@@ -26,28 +28,11 @@ type NavAccountType = {
     status: "online" | "offline";
 };
 
-const placeholderAccounts: NavAccountType[] = [
-    {
-        id: "olivia",
-        name: "Olivia Rhye",
-        email: "olivia@untitledui.com",
-        avatar: "https://www.untitledui.com/images/avatars/olivia-rhye?fm=webp&q=80",
-        status: "online",
-    },
-    {
-        id: "sienna",
-        name: "Sienna Hewitt",
-        email: "sienna@untitledui.com",
-        avatar: "https://www.untitledui.com/images/avatars/transparent/sienna-hewitt?bg=%23E0E0E0",
-        status: "online",
-    },
-];
-
 export const NavAccountMenu = ({
     className,
-    selectedAccountId = "olivia",
+    user,
     ...dialogProps
-}: AriaDialogProps & { className?: string; accounts?: NavAccountType[]; selectedAccountId?: string }) => {
+}: AriaDialogProps & { user?: any; className?: string; accounts?: NavAccountType[]; selectedAccountId?: string }) => {
     const focusManager = useFocusManager();
     const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -90,9 +75,14 @@ export const NavAccountMenu = ({
             {/*        <NavAccountCardMenuItem label="Account settings" icon={Settings01} shortcut="⌘S" />*/}
             {/*    </div>*/}
             {/*</div>*/}
-
             <div className="pt-1 pb-1.5">
-                <NavAccountCardMenuItem label="Sign out" icon={LogOut01} shortcut="⌥⇧Q" onClick={() => console.log("Sign out clicked")} />
+                <NavAccountCardMenuItem label={`Hello, ${user.displayName || user.email}!`} />
+                <NavAccountCardMenuItem
+                    label="Sign out" icon={LogOut01}
+                    onClick={async () => {
+                        await signOut(auth);
+                    }}
+                />
             </div>
         </AriaDialog>
     );

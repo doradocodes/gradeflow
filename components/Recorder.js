@@ -14,17 +14,16 @@ import {
     PauseSquare,
     StopSquare,
 } from "@untitledui/icons";
+import {updateSubmission} from "@/utils/firestore";
+import {Input} from "@/components/base/input/input";
 
-export default function Recorder({ rubric = "" }) {
+export default function Recorder({ onEndRecording }) {
     const { start, pause, resume, stop, status } = useRecorder();
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioURL, setAudioURL] = useState(null);
     const [audioFile, setAudioFile] = useState(null);
     const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState(null);
-    const [isTranscribing, setIsTranscribing] = useState(false);
-    const [transcript, setTranscript] = useState(null);
-    const [summary, setSummary] = useState(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
 
     const analyserRef = useRef(null);
@@ -125,51 +124,19 @@ export default function Recorder({ rubric = "" }) {
         }
     };
 
-    const submitFeedback = async () => {
-        const cloudinaryURL =
-            "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
-        const formData = new FormData();
-        formData.append("file", audioFile);
-        formData.append("upload_preset", "gradeflow");
-
-        const response = await fetch(cloudinaryURL, {
-            method: "POST",
-            body: formData,
-        });
-        const data = await response.json();
-
-        try {
-            await addDoc(collection(db, "recordings"), {
-                url: data.url,
-                createdAt: new Date(),
-            });
-        } catch (err) {
-            console.error("Error saving to Firebase:", err);
-        }
-
-        setIsTranscribing(true);
-        await handleTranscribe(data.url);
-        setIsTranscribing(false);
-    };
-
-    const handleTranscribe = async (audioUrl) => {
-        const res = await fetch("/api/summarize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                audioUrl,
-                rubric,
-            }),
-        });
-
-        const data = await res.json();
-
-        setTranscript(data.text);
-        setSummary(data.summary);
+    const onSubmit = async () => {
+        onEndRecording(audioURL);
     };
 
     return (
         <div className="flex flex-col gap-4">
+            {/*<input type="file" accept="audio/*" onChange={(e) => {*/}
+            {/*    const url = URL.createObjectURL(e.target.files[0]);*/}
+            {/*    setAudioURL(url);*/}
+
+            {/*}} />*/}
+            <Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />
+
             {status === "idle" && !audioURL ? (
                 <Button className="w-full" onClick={handleStart}>
                     Record feedback
@@ -245,41 +212,21 @@ export default function Recorder({ rubric = "" }) {
                 </div>
             )}
 
-            {status === "idle" && audioURL && !isTranscribing && (
+            {status === "idle" && audioURL && (
                 <>
                     <div className="flex gap-2 flex-nowrap items-center">
                         <span>Playback</span>
                         <audio controls src={audioURL} className="w-full" />
                     </div>
                     <div>
-                        <Button className="w-full cursor-pointer" onClick={submitFeedback}>
-                            Submit feedback
+                        <Button className="w-full cursor-pointer" onClick={onSubmit}>
+                            End recording
                         </Button>
                         <p className="text-sm italic text-gray-400 mt-1">
                             Your recording be saved, categorized and turned into written
                             feedback automatically.
                         </p>
                     </div>
-                </>
-            )}
-
-            {isTranscribing ? (
-                <p className="text-center">Transcribing...</p>
-            ) : (
-                <>
-                    {transcript && <p>{transcript}</p>}
-                    {summary && (
-                        <Markdown
-                            components={{
-                                h2(props) {
-                                    const { node, ...rest } = props;
-                                    return <h1 className="font-bold" {...rest} />;
-                                },
-                            }}
-                        >
-                            {summary}
-                        </Markdown>
-                    )}
                 </>
             )}
         </div>

@@ -5,8 +5,11 @@ import {updateAssignment} from "@/utils/firestore";
 import {Button} from "@/components/base/buttons/button";
 import {Select} from "@/components/base/select/select";
 import {Input} from "@/components/base/input/input";
+import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
+import {useState} from "react";
+import {Checkbox} from "@/components/base/checkbox/checkbox";
 
-const FILE_TYPES = [
+export const FILE_TYPES = [
     {
         label: 'URL',
         id: 'url',
@@ -17,31 +20,25 @@ const FILE_TYPES = [
     }
 ]
 
-export default function DeliverablesForm({ assignmentId, prevData }) {
-    const { user, loading } = useAuth();
+export default function DeliverablesForm({ onSubmit }) {
+    const [name , setName] = useState(null);
+    const [fileType, setFileType] = useState(null);
+    const [required, setRequired] = useState(null);
 
-    if (loading) return <LoadingIndicator type="line-simple" size="sm" />;
-
-    const onSubmit = async (e) => {
+    const onSubmitForm = async (e) => {
         e.preventDefault();
-        const formData = new FormData(e.target);
         const data = {
-            deliverables: [
-                ...prevData.deliverables,
-                {
-                    name: formData.get("name"),
-                    fileType: formData.get("fileType"),
-                    required: formData.get("required") === "on",
-                }
-            ]
+            name,
+            fileType,
+            required: required || false,
         };
-        await updateAssignment(assignmentId, data)
+        onSubmit(data);
     }
 
-    return <form onSubmit={onSubmit} className="bg-white rounded-lg p-4 max-w-xl">
+    return <form onSubmit={onSubmitForm} className="">
         <h2 className="text-xl font-bold mb-4">Add a new deliverable</h2>
-        <div className="grid gap-2">
-            <Input isRequired label="Deliverable name" hint="Choose a name to describe the deliverable." placeholder="Deliverable name" tooltip="The name of the deliverable." name="name" type="text" />
+        <div className="flex flex-col gap-4">
+            <Input isRequired label="Deliverable name" hint="Choose a name to describe the deliverable." placeholder="Deliverable name" tooltip="The name of the deliverable." name="name" type="text" onChange={value => setName(value)}/>
             <Select
                 isRequired
                 label="File type"
@@ -49,6 +46,7 @@ export default function DeliverablesForm({ assignmentId, prevData }) {
                 hint="Choose a file type for this deliverable."
                 placeholder="Select a file type"
                 items={FILE_TYPES}
+                onSelectionChange={(value) => setFileType(value)}
             >
                 {(item) => (
                     <Select.Item id={item.id} supportingText={item.supportingText} isDisabled={item.isDisabled} icon={item.icon} avatarUrl={item.avatarUrl}>
@@ -56,10 +54,7 @@ export default function DeliverablesForm({ assignmentId, prevData }) {
                     </Select.Item>
                 )}
             </Select>
-            <div className={"flex gap-2 mb-4"}>
-                <label htmlFor="required">Required?</label>
-                <input className="border border-gray-300 rounded-md" type="checkbox" id="required" name="required" required/>
-            </div>
+            <Checkbox label="Required deliverable?" size="md" onChange={value => setRequired(value)}/>
         </div>
         <Button color="primary" size="sm" type="submit">Create new deliverable</Button>
     </form>

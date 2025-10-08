@@ -1,6 +1,5 @@
 import RubricCard from "@/components/RubricCard";
-import {useEffect, useState} from "react";
-import RubricForm from "@/components/RubricForm";
+import clsx from "clsx";
 
 const COLORS = [
     'bg-emerald-100 text-emerald-800',
@@ -9,20 +8,17 @@ const COLORS = [
     'bg-sky-100 text-sky-800',
 ];
 
-export default function RubricCards({ assignment }) {
-    const [cards, setCards] = useState([]);
-    const [isEditing, setIsEditing] = useState(false);
-
-    if (!assignment) return <></>
-
+export default function RubricCards({ rubric  }) {
     return <>
-        <div className="grid grid-cols-2 gap-4">
-            {Object.keys(assignment?.rubric).map((r, index) =>
+        <div className={clsx(
+            "grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] max-h-96 overflow-y-auto",
+        )}>
+            {rubric?.map((r, index) =>
                 <RubricCard
                     key={index}
-                    category={r}
-                    points={assignment.rubric[r].maxPoints}
-                    criteria={assignment.rubric[r].criteria}
+                    category={r.categoryName}
+                    points={r.maxPoints}
+                    criteria={r.criteria}
                     color={COLORS[index % COLORS.length]}
                 ></RubricCard>)
             }

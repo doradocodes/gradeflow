@@ -1,14 +1,25 @@
 "use client";
 
 import {auth} from "@/utils/firebase";
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,} from "firebase/auth";
+import {createUserWithEmailAndPassword, updateProfile, signOut} from "firebase/auth";
 import {useEffect, useState} from "react";
+import {Input} from "@/components/base/input/input";
+import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
+import {Button} from "@/components/base/buttons/button";
+import Link from "next/link";
+import {createUser} from "@/utils/firestore";
 
 export default function SignupForm() {
     const [user, setUser] = useState(null);
+
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+
     const [error, setError] = useState(null);
+    const [passwordError, setPasswordError] = useState(null);
+    const [confirmPasswordError, setConfirmPasswordError] = useState(null);
 
     // Listen for changes
     useEffect(() => {
@@ -18,13 +29,32 @@ export default function SignupForm() {
 
     async function handleAuth(e) {
         e.preventDefault();
+        console.log({
+            name,
+            email,
+            password,
+        })
         try {
-            await createUserWithEmailAndPassword(auth, email, password);
+            const result = await createUserWithEmailAndPassword(auth, email, password);
+            await updateProfile(result.user, {
+                displayName: name,
+                // photoURL: "https://example.com/profile.jpg"
+            });
+            await createUser({
+                uuid: result.user.uid,
+                name: name,
+                email: email,
+
+            })
             // redirect to home page
-            window.location.href = "/";
+            window.location.href = "/assignments";
         } catch (err) {
-            console.error("Auth error:", err.message);
-            setError(err.message);
+            console.error("Auth error:", err);
+            if (err.message.includes("auth/email-already-in-use")) {
+                setError("Email already in use. Please try a different email.");
+            } else {
+                setError(err.message);
+            }
         }
     }
 
@@ -35,7 +65,7 @@ export default function SignupForm() {
     if (user) {
         return (
             <div className="flex items-center gap-2">
-                <span className="text-sm">Welcome, {user.email}</span>
+                <span className="text-sm">Welcome, {user.displayName || user.email}</span>
                 <button
                     onClick={handleLogout}
                     className="px-3 py-1 text-sm border rounded"
@@ -47,39 +77,37 @@ export default function SignupForm() {
     }
 
     return <div className="flex flex-col items-center justify-center h-screen min-w-screen">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Create an account</h2>
-            <form className="flex flex-col" onSubmit={handleAuth}>
-                <input type="text"
-                       className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
-                       placeholder="Full name"
-                       onChange={() => {}}
-                />
-                <input type="email"
-                       className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
-                       placeholder="Email address"
-                       onChange={(e) => setEmail(e.target.value)}
-                />
-                <input type="password"
-                       className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
-                       placeholder="Password"
-                       onChange={(e) => setPassword(e.target.value)}
-                />
-                <input type="text"
-                       className="bg-gray-100 text-gray-900 border-0 rounded-md p-2 mb-4 focus:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
-                       placeholder="School name"
-                       onChange={() => {}}
-                />
-                <div className="flex items-center justify-between flex-wrap">
-                    <p className="text-gray-900 mt-4"> Already have an account? <a href="#"
-                                                                                 className="text-blue-500 -200 hover:underline mt-4">Login</a>
-                    </p>
-                </div>
-                <button type="submit"
-                        className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-indigo-600 hover:to-blue-600 transition ease-in-out duration-150">Sign up
-                </button>
+        <GradeflowLogo className="mb-8" />
+        <div className="flex flex-col gap-2 justify-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 text-center">Create an account</h2>
+            <p className="text-center text-gray-500">Join us and start grading today!</p>
+        </div>
+        <div className="w-full max-w-md bg-white rounded-lg shadow-md p-8 mb-4">
+            <form className="flex flex-col gap-4" onSubmit={handleAuth}>
+                <Input type={"text"} name={"Name"} label="Name" placeholder={"Enter your full name"} required onChange={value => setName(value)} />
+                <Input type={"email"} name={"Email"} label="Email" placeholder={"Enter your email"} required onChange={value => setEmail(value)}/>
+
+                <Input isInvalid={passwordError} type={"password"} name={"Password"} label="Password" placeholder={"Enter your password"} hint={passwordError || "Must be at least 8 characters."} required onChange={(value) => {
+                    if (value.length >= 8) {
+                        setPasswordError(null);
+                        setPassword(value);
+                    } else {
+                        setPasswordError("Password must be at least 8 characters.");
+                    }
+                }}/>
+                <Input isInvalid={confirmPasswordError} hint={confirmPasswordError} type={"password"} name={"Confirm Password"} label="Confirm Password" placeholder={"Confirm your password"} required onChange={(value) => {
+                    if (password === value) {
+                        setConfirmPasswordError(null);
+                    } else {
+                        setConfirmPasswordError("Passwords do not match.");
+                    }
+                }} />
+
+                <Button className="mt-4" color="primary" size="lg" type="submit">Sign up</Button>
+                {error && <p className="text-red-500 text-xs">{error}</p>}
             </form>
         </div>
+        <p className="text-gray-900 text-center"> Already have an account? <Link className="text-brand-primary" href="/login">Login</Link></p>
     </div>
 
 }

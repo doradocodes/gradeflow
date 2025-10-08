@@ -2,8 +2,14 @@
 
 import {useAuth} from "@/components/AuthProvider";
 import {useEffect, useMemo, useState} from "react";
-import {deleteAssignment, getAssignments, updateAssignment} from "@/utils/firestore";
-import {Copy01, Edit01, PlusCircle, Trash01} from "@untitledui/icons";
+import {
+    createAssignment,
+    createSubmission,
+    deleteAssignment,
+    getAssignments, getSubmissionsByAssignment,
+    updateAssignment
+} from "@/utils/firestore";
+import {ArrowRight, Copy01, Edit01, Expand01, Plus, PlusCircle, Trash01} from "@untitledui/icons";
 import {PaginationPageMinimalCenter} from "@/components/application/pagination/pagination";
 import {Table, TableCard, TableRowActionsDropdown} from "@/components/application/table/table";
 import {ButtonUtility} from "@/components/base/buttons/button-utility";
@@ -11,11 +17,12 @@ import {Button} from "@/components/base/buttons/button";
 import Link from "next/link";
 import SlideoutMenu from "@/components/SlideoutMenu";
 import SubmissionsTable from "@/components/SubmissionsTable";
-import {Badge} from "@/components/base/badges/badges";
+import {Badge, BadgeWithButton, BadgeWithIcon} from "@/components/base/badges/badges";
 import RubricCards from "@/components/RubricCards";
 import RubricForm from "@/components/RubricForm";
 import Modal from "@/components/Modal";
 import AssignmentsForm from "@/components/AssignmentsForm";
+import SubmissionForm from "@/components/SubmissionForm";
 
 export default function AssignmentsList({title, date, direction}) {
     const {user, loading} = useAuth();
@@ -41,7 +48,9 @@ export default function AssignmentsList({title, date, direction}) {
 function AssignmentsTable({title, assignments, onLoadAssignments}) {
     const [openSubmissions, setOpenSubmissions] = useState(false);
     const [openRubric, setOpenRubric] = useState(false);
-    const [openAssignmentsForm, setOpenAssignmentsForm] = useState(false);
+    const [isAddingRubric, setIsAddingRubric] = useState(false);
+    const [openNewAssignmentsForm, setOpenNewAssignmentsForm] = useState(false);
+    const [openEditAssignmentsForm, setOpenEditAssignmentsForm] = useState(false);
 
     const [currentAssignment, setCurrentAssignment] = useState(null);
     const [deleteAssignmentId, setDeleteAssignmentId] = useState(null);
@@ -51,6 +60,11 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
         direction: "ascending",
     });
 
+    const onCreateAssignment = async (values) => {
+        await createAssignment(values);
+        onLoadAssignments();
+    }
+
     const onDeleteAssignment = async (assignmentId) => {
         await deleteAssignment(assignmentId);
         onLoadAssignments();
@@ -58,6 +72,19 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
 
     const onEditAssignment = async (values) => {
         await updateAssignment(values.id, values)
+        onLoadAssignments();
+    }
+
+    const onCreateRubric = async (values) => {
+        await onEditAssignment({
+            id: currentAssignment.id,
+            rubric: [
+                ...(currentAssignment.rubric || []),
+                values
+            ]
+        });
+        setIsAddingRubric(false);
+        setOpenRubric(false);
         onLoadAssignments();
     }
 
@@ -84,12 +111,27 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
         });
     }, [sortDescriptor]);
 
+    const getSubmissionsCount = async (assignmentId) => {
+        const data = await getSubmissionsByAssignment(assignmentId);
+        return data.length;
+    }
+
     return (<div className="">
 
         <div>
             <TableCard.Root className="mb-8">
                 <TableCard.Header
                     title={title}
+                    contentTrailing={
+                        <div className="flex items-center">
+                            <Button
+                                color="primary" size="sm" iconLeading={<PlusCircle data-icon />}
+                                onClick={() => setOpenNewAssignmentsForm(true)}
+                            >
+                                Add assignment
+                            </Button>
+                        </div>
+                    }
                 />
                 <Table aria-label="Assignments" sortDescriptor={sortDescriptor}
                        onSortChange={setSortDescriptor}>
@@ -117,25 +159,28 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                     day: "numeric"
                                 })}</Table.Cell>
                                 <Table.Cell>
-                                    <Link href={`/submit/${item.id}`}>
-                                        <Button color="secondary" size="sm" className="" iconTrailing={<Copy01 size={12}/>}>
+                                    <Link href={`/submit/${item.id}`} target="_blank" rel="noopener noreferrer">
+                                        <Button color="primary" size="sm" className="" iconTrailing={<Copy01 size={12}/>} onClick={() => {
+                                            //copy to clipboard
+                                            navigator.clipboard.writeText(`${window.location.origin}/submit/${item.id}`);
+                                        }}>
                                             Submission Link
                                         </Button>
                                     </Link>
                                 </Table.Cell>
                                 <Table.Cell>
                                     <Button
-                                        color="primary"
+                                        color="secondary"
                                         size="sm" className=""
                                         onClick={() => {
                                             setOpenSubmissions(true)
                                             setCurrentAssignment(item)
                                         }}
-                                    >See submissions</Button>
+                                    >See {getSubmissionsCount(item.id)} submissions</Button>
                                 </Table.Cell>
                                 <Table.Cell>
                                     <Button
-                                        color="primary"
+                                        color="secondary"
                                         size="sm" className=""
                                         onClick={() => {
                                             setOpenRubric(true)
@@ -158,7 +203,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                     <div className="flex justify-end gap-0.5">
                                         <ButtonUtility size="xs" color="tertiary" tooltip="Delete" icon={Trash01} onClick={() => setDeleteAssignmentId(item.id)}/>
                                         <ButtonUtility size="xs" color="tertiary" tooltip="Edit" icon={Edit01} onClick={() => {
-                                            setOpenAssignmentsForm(true)
+                                            setOpenEditAssignmentsForm(true)
                                             setCurrentAssignment(item)
                                         }}/>
                                     </div>
@@ -168,47 +213,85 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     </Table.Body>
                 </Table>
 
-                <PaginationPageMinimalCenter page={1} total={10} className="px-4 py-3 md:px-6 md:pt-3 md:pb-4"/>
+                {/*<PaginationPageMinimalCenter page={1} total={10} className="px-4 py-3 md:px-6 md:pt-3 md:pb-4"/>*/}
             </TableCard.Root>
+            <SlideoutMenu
+                open={openNewAssignmentsForm}
+                onClose={() => setOpenNewAssignmentsForm(false)}
+                title={`Create a new assignment`}
+                description="Fill in the details to create a new assignment."
+            >
+                {openNewAssignmentsForm &&
+                    <AssignmentsForm
+                        onSubmit={onCreateAssignment}
+                        onClose={() => setOpenNewAssignmentsForm(false)} />
+                }
+            </SlideoutMenu>
             {currentAssignment && <>
+                {/*Edit assignment form*/}
                 <SlideoutMenu
-                    open={openAssignmentsForm}
-                    onClose={() => setOpenAssignmentsForm(false)}
+                    open={openEditAssignmentsForm}
+                    onClose={() => {
+                        setCurrentAssignment(null);
+                        setOpenEditAssignmentsForm(false)
+                    }}
                     title={`Create new assignment`}
                     description="Fill in the details to create a new assignment."
                 >
                     <AssignmentsForm
                         defaultValue={currentAssignment}
-                        onClose={() => setOpenAssignmentsForm(false)}
+                        onClose={() => {
+                            setCurrentAssignment(null);
+                            setOpenEditAssignmentsForm(false)
+                        }}
                         onSubmit={(values) => onEditAssignment(values)}
                     />
                 </SlideoutMenu>
+
+                {/*View submissions*/}
                 <SlideoutMenu
                     open={openSubmissions}
-                    onClose={() => setOpenSubmissions(false)}
+                    onClose={() => {
+                        setCurrentAssignment(null);
+                        setOpenSubmissions(false)
+                    }}
                     title={`${currentAssignment.title} Submissions`}
                     description="View and grade submissions for this assignment."
+                    isExpanded={true}
                 >
                     <SubmissionsTable
-                        assignmentId={currentAssignment.id}
+                        assignment={currentAssignment}
                     />
                 </SlideoutMenu>
+
+                {/*View rubric*/}
                 <SlideoutMenu
                     open={openRubric}
-                    onClose={() => setOpenRubric(false)}
+                    onClose={() => {
+                        setCurrentAssignment(null);
+                        setOpenRubric(false);
+                        setIsAddingRubric(false);
+                    }}
                     title={`${currentAssignment.title} Rubric`}
                     description="Grading rubric for this assignment."
                 >
-                    <RubricCards assignment={currentAssignment}/>
-                    <div className="divider w-full border-b border-gray-200"></div>
-                    <RubricForm assignmentId={currentAssignment?.id} prevData={currentAssignment}/>
+                    <RubricCards rubric={currentAssignment.rubric} isGrid={false} />
+                    {isAddingRubric ?
+                        <div className="w-full border border-gray-300 rounded-lg mt-4">
+                            <RubricForm onSubmit={onCreateRubric}/>
+                        </div>
+                        :
+                        <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)} iconLeading={Plus}>Add category</Button>
+                    }
                 </SlideoutMenu>
             </>}
+
+            {/*Warning modal*/}
             <Modal open={deleteAssignmentId} icon={<Trash01 className="w-6 h-6 text-red-500" /> } title={"Delete assignment?"} onClose={() => setDeleteAssignmentId(null)}>
                 <div className="h-full flex flex-col gap-4 justify-between">
                     <p>Are you sure you want to delete this post? This action cannot be undone.</p>
                     <div className="flex gap-2">
-                        <Button className="w-1/2" color="secondary" onClick={() => setIsWarningModalOpen(false)}>Cancel</Button>
+                        <Button className="w-1/2" color="secondary" onClick={() => setDeleteAssignmentId(null)}>Cancel</Button>
                         <Button className="w-1/2" color="primary-destructive" onClick={() => {
                             setDeleteAssignmentId(null);
                             onDeleteAssignment(deleteAssignmentId);

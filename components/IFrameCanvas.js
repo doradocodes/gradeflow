@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect, useRef, useState} from "react";
+import SafeIframe from "@/components/SafeIframe";
 
 export default function IframeCanvas({ url }) {
     const canvasRef = useRef(null);
@@ -52,15 +53,13 @@ export default function IframeCanvas({ url }) {
             onMouseMove={onMouseMove}
             onMouseUp={onMouseUp}
         >
-            <iframe
+            <SafeIframe
                 src={url}
-                className={`w-9/12 h-4/5 border-1 border-gray-300 ${isIframeHovered ? 'outline-2 outline-blue-500 outline-offset-1' : ''}`}
-                style={{
-                    transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
-                    transformOrigin: "0 0",
-                }}
                 onMouseOver={onIFrameMouseOver}
                 onMouseOut={onIFrameMouseOut}
+                isIframeHovered={isIframeHovered}
+                scale={scale}
+                pos={pos}
             />
         </div>
     );
