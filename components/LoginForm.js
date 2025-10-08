@@ -8,6 +8,7 @@ import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 import {Checkbox} from "@/components/base/checkbox/checkbox";
 import Link from "next/link";
 import {Button} from "@/components/base/buttons/button";
+import {redirect} from "next/navigation";
 
 export default function LoginForm() {
     const [user, setUser] = useState(null);
@@ -26,7 +27,7 @@ export default function LoginForm() {
         try {
             await signInWithEmailAndPassword(auth, email, password);
             // redirect to home page
-            window.location.href = "/";
+            redirect('/assignments');
         } catch (err) {
             console.error("Auth error:", err.message);
             setError(err.message);
@@ -38,17 +39,7 @@ export default function LoginForm() {
     }
 
     if (user) {
-        return (
-            <div className="flex items-center gap-2">
-                <span className="text-sm">Welcome, {user.displayName || user.email}</span>
-                <button
-                    onClick={handleLogout}
-                    className="px-3 py-1 text-sm border rounded"
-                >
-                    Logout
-                </button>
-            </div>
-        );
+        redirect('/assignments');
     }
 
     return <div className="flex flex-col items-center justify-center h-screen min-w-screen">
