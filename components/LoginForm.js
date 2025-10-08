@@ -13,7 +13,6 @@ export default function LoginForm() {
     const [user, setUser] = useState(null);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [isNewUser, setIsNewUser] = useState(false);
     const [error, setError] = useState(null);
 
     // Listen for changes
@@ -25,11 +24,7 @@ export default function LoginForm() {
     async function handleAuth(e) {
         e.preventDefault();
         try {
-            if (isNewUser) {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } else {
-                await signInWithEmailAndPassword(auth, email, password);
-            }
+            await signInWithEmailAndPassword(auth, email, password);
             // redirect to home page
             window.location.href = "/";
         } catch (err) {
@@ -64,8 +59,8 @@ export default function LoginForm() {
         </div>
         <div className="w-full max-w-md  bg-white rounded-lg shadow-md p-6">
             <form className="flex flex-col gap-4" onSubmit={handleAuth}>
-                <Input type={"email"} name={"Email"} label="Email" placeholder={"Enter your email"} required />
-                <Input type={"password"} name={"Password"} label="Password" placeholder={"Enter your password"} required />
+                <Input type={"email"} name={"Email"} label="Email" placeholder={"Enter your email"} required onChange={value => setEmail(value)}/>
+                <Input type={"password"} name={"Password"} label="Password" placeholder={"Enter your password"} required onChange={value => setPassword(value)}/>
 
                 <div className="flex items-center justify-between flex-wrap">
                     <div>

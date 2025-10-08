@@ -2,3 +2,4 @@
 /.idea
 /.next
 .env
+.DS_Store
