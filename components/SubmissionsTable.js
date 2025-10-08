@@ -1,4 +1,10 @@
-import {createAssignment, createSubmission, deleteSubmission, getSubmissionsByAssignment} from "@/utils/firestore";
+import {
+    createAssignment,
+    createSubmission,
+    deleteSubmission,
+    getSubmissionsByAssignment,
+    updateSubmission
+} from "@/utils/firestore";
 import {useEffect, useState} from "react";
 import Link from "next/link";
 import SubmissionForm from "@/components/SubmissionForm";
@@ -11,9 +17,10 @@ import {LoadingIndicator} from "@/components/application/loading-indicator/loadi
 import FeedbackSummary from "@/components/FeedbackSummary";
 import SlideoutMenu from "@/components/SlideoutMenu";
 
-export default function SubmissionsTable({assignment}) {
+export default function SubmissionsTable({ assignment }) {
     const [submissions, setSubmissions] = useState([]);
     const [isAddingSubmission, setIsAddingSubmission] = useState(false);
+    const [currentSubmission, setCurrentSubmission] = useState(null);
 
     useEffect(() => {
         loadSubmissions();
@@ -30,7 +37,19 @@ export default function SubmissionsTable({assignment}) {
             assignmentId: assignment.id,
             status: values.submittedAt.getTime() < new Date(assignment.dueDate).getTime() ? 'on_time' : 'late',
         };
-        await createSubmission(data);
+        // If the submission is being edited, update the existing submission
+        if (currentSubmission) {
+            await onEditAssignment(currentSubmission.id, data);
+        } else {
+            await createSubmission(data);
+        }
+        await loadSubmissions();
+        setCurrentSubmission(null);
+        setIsAddingSubmission(false);
+    }
+
+    const onEditAssignment = async (submissionId, values) => {
+        await updateSubmission(submissionId, values);
         await loadSubmissions();
         setIsAddingSubmission(false);
     }
@@ -68,7 +87,7 @@ export default function SubmissionsTable({assignment}) {
             />
             <Table aria-label="Submissions" className="w-full mb-4">
                 <Table.Header>
-                    <Table.Head id="studentName" label="Student Name" allowsSorting/>
+                    <Table.Head id="studentName" label="Student Name" allowsSorting isRowHeader/>
                     <Table.Head id="status" label="Status" allowsSorting/>
                     <Table.Head id="deliverables" label="Deliverables"/>
                     <Table.Head id="grade" label="Grade"/>
@@ -96,7 +115,10 @@ export default function SubmissionsTable({assignment}) {
                             <Table.Cell className="px-4">
                                 <div className="flex justify-end gap-0.5">
                                     <ButtonUtility onClick={() => onDeleteSubmission(item)} size="xs" color="tertiary" tooltip="Delete" icon={Trash01}/>
-                                    <ButtonUtility size="xs" color="tertiary" tooltip="Edit" icon={Edit01}/>
+                                    <ButtonUtility onClick={() => {
+                                        setCurrentSubmission(item);
+                                        setIsAddingSubmission(true);
+                                    }} size="xs" color="tertiary" tooltip="Edit" icon={Edit01} />
                                 </div>
                             </Table.Cell>
                         </Table.Row>
@@ -104,24 +126,28 @@ export default function SubmissionsTable({assignment}) {
                 </Table.Body>
             </Table>
         </TableCard.Root>
-
-        {isAddingSubmission ?
-            <SlideoutMenu
-                open={isAddingSubmission}
-                onClose={() => setIsAddingSubmission(false)}
-                title={`Create a new submission`}
-                description="Fill in the details to create a new submission."
-            >
+        <Button color="secondary" size="sm" onClick={() => setIsAddingSubmission(true)} iconLeading={Plus}>Add submission</Button>
+        <SlideoutMenu
+            open={isAddingSubmission}
+            onClose={() => {
+                setIsAddingSubmission(false)
+                setCurrentSubmission(null)
+            }}
+            title={currentSubmission ? 'Edit this submission' : 'Create a new submission'}
+            description="Fill in the details to create a new submission."
+            isExpanded={true}
+        >
+            { isAddingSubmission &&
                 <SubmissionForm
                     assignmentId={assignment.id}
                     isInline={true}
                     deliverables={assignment.deliverables}
                     onSubmit={onCreateAssignment}
+                    defaultValues={currentSubmission}
+                    isExpanded={true}
                 />
-            </SlideoutMenu>
-            :
-            <Button color="secondary" size="sm" onClick={() => setIsAddingSubmission(true)} iconLeading={Plus}>Add submission</Button>
-        }
+            }
+        </SlideoutMenu>
     </>
 }
 

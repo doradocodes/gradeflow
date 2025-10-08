@@ -11,13 +11,14 @@ import {InputGroup} from "@/components/base/input/input-group";
 import clsx from "clsx";
 import {Badge} from "@/components/base/badges/badges";
 
-export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
+export default function SubmissionForm({ onSubmit, deliverables, isInline, defaultValues }) {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [submittedAt, setSubmittedAt] = useState(null);
     const [error, setError] = useState(null);
 
-    const [studentName, setStudentName] = useState('');
-    const [studentEmail, setStudentEmail] = useState('');
+    const [studentName, setStudentName] = useState(defaultValues?.studentName || '');
+    const [studentEmail, setStudentEmail] = useState(defaultValues?.studentEmail ||'');
+    const [deliverablesList, setDeliverablesList] = useState(defaultValues?.deliverables || deliverables);
 
 
     const formatURL = (url) => {
@@ -34,12 +35,12 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
         const data = {
             studentName,
             studentEmail,
-            deliverables: deliverables.map((d, index) => {
+            deliverables: deliverablesList.map((d, index) => {
                 return {
                     name: d.name,
                     value: e.target.elements[`deliverables-${d.name}`].value,
                     required: d.required,
-                    type: d.fileType,
+                    type: d.type,
                 }
             }),
             submittedAt: currentDate,
@@ -51,7 +52,7 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
         }
     }
 
-    const getInputPicker = (name, type, required, index) => {
+    const getInputPicker = (name, type, required, defaultValue) => {
         switch(type) {
             case 'url':
                 return <div>
@@ -60,7 +61,7 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
                         <span className="text-sm text-secondary font-medium">{name}</span>
                         <Badge type="color" color="brand" size="sm">{type}</Badge>
                     </div>
-                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype="url" />
+                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype="url" defaultValue={defaultValue || ''} />
                 </div>
             default:
                 return <div>
@@ -69,7 +70,7 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
                         <span className="text-sm text-secondary font-medium">{name}</span>
                         <Badge type="color" color="brand" size="sm">{type}</Badge>
                     </div>
-                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype={type} />
+                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype={type} defaultValue={defaultValue || ''} />
                 </div>
         }
     }
@@ -84,13 +85,37 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
             }>
                 <div className="flex flex-col gap-2">
                     <h2 className="font-bold text-secondary mb-4">Student Information</h2>
-                    <Input type={"text"} name={"studentName"} label={"Student Name"} required onChange={(value) => setStudentName(value)} />
-                    <Input type={"email"} name={"studentEmail"} label={"Student Email"} required onChange={(value) => setStudentEmail(value)} />
+                    <Input
+                        type={"text"}
+                        name={"studentName"}
+                        label={"Student Name"}
+                        required
+                        onChange={(value) => setStudentName(value)}
+                        defaultValue={studentName}
+                    />
+                    <Input
+                        type={"email"}
+                        name={"studentEmail"}
+                        label={"Student Email"}
+                        required
+                        onChange={(value) => setStudentEmail(value)}
+                        defaultValue={studentEmail}
+                    />
                 </div>
                 <div className="flex flex-col gap-2">
                     <h2 className="font-bold text-secondary mb-4">Deliverables</h2>
-                    {deliverables.map((d, index) => (
-                        <div key={d.name} className="flex flex-col gap-1.5">{getInputPicker(d.name, d.fileType, d.required, index)}</div>
+                    {deliverablesList.map((d, index) => (
+                        <div
+                            key={d.name}
+                            className="flex flex-col gap-1.5"
+                        >
+                            {getInputPicker(
+                                d.name,
+                                d.type,
+                                d.required,
+                                d.value
+                            )}
+                        </div>
                     ))}
                 </div>
             </div>
@@ -100,7 +125,6 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline }) {
         <Modal
             open={isSubmitted}
             onClose={() => setIsSubmitted(false)}
-            // title={"Submission successful!"}
         >
             <div className="w-full h-full min-h-60 flex flex-col justify-center items-center pb-4">
                 <h1 className="text-center font-bold text-3xl mb-4">Thank you for your submission!</h1>

@@ -29,7 +29,7 @@ export default function DeliverablesForm({ onSubmit }) {
         e.preventDefault();
         const data = {
             name,
-            fileType,
+            type: fileType,
             required: required || false,
         };
         onSubmit(data);

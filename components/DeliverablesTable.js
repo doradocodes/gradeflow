@@ -23,7 +23,7 @@ export default function DeliverablesTable() {
         <Table aria-label="Assignments">
             <Table.Header>
                 <Table.Head id="name" label="Name" isRowHeader/>
-                <Table.Head id="fileType" label="File type" isRowHeader/>
+                <Table.Head id="type" label="File type" isRowHeader/>
                 <Table.Head id="required" label="Required?" isRowHeader/>
             </Table.Header>
 
@@ -31,7 +31,7 @@ export default function DeliverablesTable() {
                 {(item) => (
                     <Table.Row id={item.id}>
                         <Table.Cell>{item.name}</Table.Cell>
-                        <Table.Cell>{item.fileType}</Table.Cell>
+                        <Table.Cell>{item.type}</Table.Cell>
                         <Table.Cell>{item.description}</Table.Cell>
                     </Table.Row>
                 )}

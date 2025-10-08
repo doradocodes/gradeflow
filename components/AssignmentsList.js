@@ -4,25 +4,23 @@ import {useAuth} from "@/components/AuthProvider";
 import {useEffect, useMemo, useState} from "react";
 import {
     createAssignment,
-    createSubmission,
     deleteAssignment,
-    getAssignments, getSubmissionsByAssignment,
+    getAssignments,
+    getSubmissionsByAssignment,
     updateAssignment
 } from "@/utils/firestore";
-import {ArrowRight, Copy01, Edit01, Expand01, Plus, PlusCircle, Trash01} from "@untitledui/icons";
-import {PaginationPageMinimalCenter} from "@/components/application/pagination/pagination";
-import {Table, TableCard, TableRowActionsDropdown} from "@/components/application/table/table";
+import {Copy01, Edit01, Plus, PlusCircle, Trash01} from "@untitledui/icons";
+import {Table, TableCard} from "@/components/application/table/table";
 import {ButtonUtility} from "@/components/base/buttons/button-utility";
 import {Button} from "@/components/base/buttons/button";
 import Link from "next/link";
 import SlideoutMenu from "@/components/SlideoutMenu";
 import SubmissionsTable from "@/components/SubmissionsTable";
-import {Badge, BadgeWithButton, BadgeWithIcon} from "@/components/base/badges/badges";
+import {Badge} from "@/components/base/badges/badges";
 import RubricCards from "@/components/RubricCards";
 import RubricForm from "@/components/RubricForm";
 import Modal from "@/components/Modal";
 import AssignmentsForm from "@/components/AssignmentsForm";
-import SubmissionForm from "@/components/SubmissionForm";
 
 export default function AssignmentsList({title, date, direction}) {
     const {user, loading} = useAuth();
@@ -125,7 +123,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     contentTrailing={
                         <div className="flex items-center">
                             <Button
-                                color="primary" size="sm" iconLeading={<PlusCircle data-icon />}
+                                color="primary" size="sm" iconLeading={<PlusCircle data-icon/>}
                                 onClick={() => setOpenNewAssignmentsForm(true)}
                             >
                                 Add assignment
@@ -160,7 +158,8 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                 })}</Table.Cell>
                                 <Table.Cell>
                                     <Link href={`/submit/${item.id}`} target="_blank" rel="noopener noreferrer">
-                                        <Button color="primary" size="sm" className="" iconTrailing={<Copy01 size={12}/>} onClick={() => {
+                                        <Button color="primary" size="sm" className=""
+                                                iconTrailing={<Copy01 size={12}/>} onClick={() => {
                                             //copy to clipboard
                                             navigator.clipboard.writeText(`${window.location.origin}/submit/${item.id}`);
                                         }}>
@@ -192,20 +191,23 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                     <ul className="list-decimal">
                                         {item.deliverables?.map((deliverable) => (
                                             <li key={deliverable.name} className=" list-inside flex gap-2">
-                                                <span className="inline-block">{deliverable.name}</span> <Badge type="color"
-                                                                                                                color="brand"
-                                                                                                                size="sm">{deliverable.fileType}</Badge>
+                                                <span className="inline-block">{deliverable.name}</span> <Badge
+                                                type="color"
+                                                color="brand"
+                                                size="sm">{deliverable.type}</Badge>
                                             </li>
                                         ))}
                                     </ul>
                                 </Table.Cell>
                                 <Table.Cell className="px-4">
                                     <div className="flex justify-end gap-0.5">
-                                        <ButtonUtility size="xs" color="tertiary" tooltip="Delete" icon={Trash01} onClick={() => setDeleteAssignmentId(item.id)}/>
-                                        <ButtonUtility size="xs" color="tertiary" tooltip="Edit" icon={Edit01} onClick={() => {
-                                            setOpenEditAssignmentsForm(true)
-                                            setCurrentAssignment(item)
-                                        }}/>
+                                        <ButtonUtility size="xs" color="tertiary" tooltip="Delete" icon={Trash01}
+                                                       onClick={() => setDeleteAssignmentId(item.id)}/>
+                                        <ButtonUtility size="xs" color="tertiary" tooltip="Edit" icon={Edit01}
+                                                       onClick={() => {
+                                                           setOpenEditAssignmentsForm(true)
+                                                           setCurrentAssignment(item)
+                                                       }}/>
                                     </div>
                                 </Table.Cell>
                             </Table.Row>
@@ -224,10 +226,11 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                 {openNewAssignmentsForm &&
                     <AssignmentsForm
                         onSubmit={onCreateAssignment}
-                        onClose={() => setOpenNewAssignmentsForm(false)} />
+                        onClose={() => setOpenNewAssignmentsForm(false)}/>
                 }
             </SlideoutMenu>
-            {currentAssignment && <>
+
+            <>
                 {/*Edit assignment form*/}
                 <SlideoutMenu
                     open={openEditAssignmentsForm}
@@ -238,14 +241,16 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     title={`Create new assignment`}
                     description="Fill in the details to create a new assignment."
                 >
-                    <AssignmentsForm
-                        defaultValue={currentAssignment}
-                        onClose={() => {
-                            setCurrentAssignment(null);
-                            setOpenEditAssignmentsForm(false)
-                        }}
-                        onSubmit={(values) => onEditAssignment(values)}
-                    />
+                    { currentAssignment &&
+                        <AssignmentsForm
+                            defaultValue={currentAssignment}
+                            onClose={() => {
+                                setCurrentAssignment(null);
+                                setOpenEditAssignmentsForm(false)
+                            }}
+                            onSubmit={(values) => onEditAssignment(values)}
+                        />
+                    }
                 </SlideoutMenu>
 
                 {/*View submissions*/}
@@ -255,13 +260,15 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                         setCurrentAssignment(null);
                         setOpenSubmissions(false)
                     }}
-                    title={`${currentAssignment.title} Submissions`}
+                    title={`${currentAssignment?.title} Submissions`}
                     description="View and grade submissions for this assignment."
                     isExpanded={true}
                 >
-                    <SubmissionsTable
-                        assignment={currentAssignment}
-                    />
+                    {currentAssignment &&
+                        <SubmissionsTable
+                            assignment={currentAssignment}
+                        />
+                    }
                 </SlideoutMenu>
 
                 {/*View rubric*/}
@@ -272,26 +279,29 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                         setOpenRubric(false);
                         setIsAddingRubric(false);
                     }}
-                    title={`${currentAssignment.title} Rubric`}
+                    title={`${currentAssignment?.title} Rubric`}
                     description="Grading rubric for this assignment."
                 >
-                    <RubricCards rubric={currentAssignment.rubric} isGrid={false} />
+                    {currentAssignment && <RubricCards rubric={currentAssignment.rubric} isGrid={false}/>}
                     {isAddingRubric ?
                         <div className="w-full border border-gray-300 rounded-lg mt-4">
                             <RubricForm onSubmit={onCreateRubric}/>
                         </div>
                         :
-                        <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)} iconLeading={Plus}>Add category</Button>
+                        <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)}
+                                iconLeading={Plus}>Add category</Button>
                     }
                 </SlideoutMenu>
-            </>}
+            </>
 
             {/*Warning modal*/}
-            <Modal open={deleteAssignmentId} icon={<Trash01 className="w-6 h-6 text-red-500" /> } title={"Delete assignment?"} onClose={() => setDeleteAssignmentId(null)}>
+            <Modal open={deleteAssignmentId} icon={<Trash01 className="w-6 h-6 text-red-500"/>}
+                   title={"Delete assignment?"} onClose={() => setDeleteAssignmentId(null)}>
                 <div className="h-full flex flex-col gap-4 justify-between">
                     <p>Are you sure you want to delete this post? This action cannot be undone.</p>
                     <div className="flex gap-2">
-                        <Button className="w-1/2" color="secondary" onClick={() => setDeleteAssignmentId(null)}>Cancel</Button>
+                        <Button className="w-1/2" color="secondary"
+                                onClick={() => setDeleteAssignmentId(null)}>Cancel</Button>
                         <Button className="w-1/2" color="primary-destructive" onClick={() => {
                             setDeleteAssignmentId(null);
                             onDeleteAssignment(deleteAssignmentId);

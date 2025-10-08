@@ -1,7 +1,7 @@
 "use client";
 
 import {Bell01, SearchLg, Settings01} from "@untitledui/icons";
-import {Button as AriaButton, DialogTrigger, Popover, TooltipTrigger} from "react-aria-components";
+import {Button as AriaButton, DialogTrigger, Popover } from "react-aria-components";
 import {Avatar} from "@/components/base/avatar/avatar";
 import {Input} from "@/components/base/input/input";
 import {cx} from "@/utils/cx";
@@ -16,7 +16,7 @@ import NotificationsList from "@/components/NotificationsList";
 import {useEffect, useState} from "react";
 import {collection, onSnapshot, orderBy, query, where} from "firebase/firestore";
 import {db} from "@/utils/firebase";
-import {Tooltip} from "@/components/base/tooltip/tooltip";
+import {Tooltip, TooltipTrigger} from "@/components/base/tooltip/tooltip";
 
 export const HeaderNavigationBase = ({
                                          user,
@@ -133,7 +133,7 @@ export const HeaderNavigationBase = ({
                         </div>
 
                         { user &&
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1">
                                 {trailingContent}
 
                                 <div className="flex gap-0.5">
@@ -150,11 +150,17 @@ export const HeaderNavigationBase = ({
                                 <DialogTrigger>
                                     <AriaButton>
                                         <Tooltip title={"Notifications"} placement="bottom">
-                                            <TooltipTrigger className="group relative">
-                                                <Bell01 className={clsx(
-                                                    "size-5 mr-2 cursor-pointer",
-                                                    hasUnreadNotifications() ? "text-blue-500" : "text-fg-quaternary",
-                                                )} />
+                                            <TooltipTrigger className="cursor-pointer text-fg-quaternary transition duration-100 ease-linear hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover">
+                                                <NavItemButton
+                                                    size="md"
+                                                    icon={Bell01}
+                                                    label="Settings"
+                                                    href="/settings"
+                                                    tooltipPlacement="bottom"
+                                                    className={clsx(
+                                                        hasUnreadNotifications() ? "text-blue-500" : "text-fg-quaternary",
+                                                    )}
+                                                />
                                             </TooltipTrigger>
                                         </Tooltip>
                                     </AriaButton>
@@ -184,7 +190,7 @@ export const HeaderNavigationBase = ({
                                         <AriaButton
                                             className={({isPressed, isFocused}) =>
                                                 cx(
-                                                    "group relative inline-flex cursor-pointer",
+                                                    "group relative inline-flex cursor-pointer mx-1",
                                                     (isPressed || isFocused) && "rounded-full outline-2 outline-offset-2 outline-focus-ring",
                                                 )
                                             }
