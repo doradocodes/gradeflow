@@ -23,11 +23,13 @@ export async function POST(req) {
     For each rubric category, I want a short summary (2–3 sentences) and estimate the points earned for that category.
     If a category is not addressed in the transcript, explicitly state "Not addressed.". 
     The summary should be written from the perspective of the teacher, who is writing feedback to the student. The summary should be in the tone of the speaker from the audio.
+    The category name should match exactly as given in the rubric.
     The summary should be in JSON format with the following structure:
     {[
         {
             "category": "Category name",
             "estimated_points": 10,
+            "max_points": 10,
             "summary": "The summary of the category"
         }
         ...

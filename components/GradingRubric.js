@@ -14,13 +14,11 @@ import {LoadingIndicator} from "@/components/application/loading-indicator/loadi
 import {Tooltip, TooltipTrigger} from "@/components/base/tooltip/tooltip";
 import FeedbackSummary from "@/components/FeedbackSummary";
 
-export default function GradingRubric({ submission, assignmentId, studentName, currentFile, setCurrentFile }) {
+export default function GradingRubric({ submission, assignmentId, studentName, currentFile, setCurrentFile, onOpenSummary }) {
     const [assignment, setAssignment] = useState(null);
     const [collapsed, setCollapsed] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
-    const [transcript, setTranscript] = useState(null);
-    const [summary, setSummary] = useState(null);
-    const [isSummarized, setIsSummarized] = useState(false);
+    const [isSummarized, setIsSummarized] = useState(!!submission?.feedback);
 
     useEffect(() => {
         async function load() {
@@ -39,18 +37,20 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
     }
 
     const submitFeedback = async (audioUrl) => {
-        // const cloudinaryURL =
-        //     "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
-        // const formData = new FormData();
-        // formData.append("file", audioFile);
-        // formData.append("upload_preset", "gradeflow");
-        //
-        // // Upload the audio file to Cloudinary
-        // const response = await fetch(cloudinaryURL, {
-        //     method: "POST",
-        //     body: formData,
-        // });
-        // const data = await response.json();
+        if (audioUrl.indexOf("cloudinary") < 0) {
+            const cloudinaryURL =
+                "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
+            const formData = new FormData();
+            formData.append("file", audioFile);
+            formData.append("upload_preset", "gradeflow");
+
+            // Upload the audio file to Cloudinary
+            const response = await fetch(cloudinaryURL, {
+                method: "POST",
+                body: formData,
+            });
+            const data = await response.json();
+        }
 
         setIsTranscribing(true);
         await handleTranscribe(audioUrl);
@@ -83,7 +83,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
 
         setTranscript(data.text);
         setSummary(data.summary);
-        setIsSummarized(true);
+        onOpenSummary(true);
     };
 
     if (!assignment) return null;
@@ -141,15 +141,10 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 <Recorder onEndRecording={submitFeedback} />
             }
             {isSummarized &&
-                <Modal
-                    open={isSummarized}
-                    onClose={() => setIsSummarized(false)}
-                    title="Feedback summary"
-                >
-                    <FeedbackSummary submission={submission} />
-                </Modal>
+                <Button color="tertiary" className="w-full color-gray-500 mt-2" onClick={() => onOpenSummary(true)}>View summary</Button>
             }
         </div>
+
     </div>
 }
 

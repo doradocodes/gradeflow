@@ -148,22 +148,15 @@ export const HeaderNavigationBase = ({
                                 </div>
 
                                 <DialogTrigger>
-                                    <AriaButton>
-                                        <Tooltip title={"Notifications"} placement="bottom">
-                                            <TooltipTrigger className="cursor-pointer text-fg-quaternary transition duration-100 ease-linear hover:text-fg-quaternary_hover focus:text-fg-quaternary_hover">
-                                                <NavItemButton
-                                                    size="md"
-                                                    icon={Bell01}
-                                                    label="Settings"
-                                                    href="/settings"
-                                                    tooltipPlacement="bottom"
-                                                    className={clsx(
-                                                        hasUnreadNotifications() ? "text-blue-500" : "text-fg-quaternary",
-                                                    )}
-                                                />
-                                            </TooltipTrigger>
-                                        </Tooltip>
-                                    </AriaButton>
+                                    <NavItemButton
+                                        size="md"
+                                        icon={Bell01}
+                                        label="Notifications"
+                                        tooltipPlacement="bottom"
+                                        className={clsx(
+                                        hasUnreadNotifications() ? "text-blue-500" : "text-fg-quaternary",
+                                    )}
+                                    />
                                     <Popover
                                         placement="bottom right"
                                         offset={8}

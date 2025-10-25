@@ -130,17 +130,13 @@ export default function Recorder({ onEndRecording }) {
 
     return (
         <div className="flex flex-col gap-4">
-            {/*<input type="file" accept="audio/*" onChange={(e) => {*/}
-            {/*    const url = URL.createObjectURL(e.target.files[0]);*/}
-            {/*    setAudioURL(url);*/}
-
-            {/*}} />*/}
-            <Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />
-
             {status === "idle" && !audioURL ? (
-                <Button className="w-full" onClick={handleStart}>
-                    Record feedback
-                </Button>
+                <>
+                    <Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />
+                    <Button className="w-full" onClick={handleStart}>
+                        Record feedback
+                    </Button>
+                </>
             ) : (
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">

@@ -161,7 +161,7 @@ function GradeCell({ item }) {
                 title={`Feedback for ${item.studentName}`}
                 isExpanded={true}
             >
-                <FeedbackSummary submission={item} />
+                <FeedbackSummary submissionId={item.id} />
             </SlideoutMenu>
             <Button
                 color="secondary"

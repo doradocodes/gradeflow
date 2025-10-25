@@ -20,7 +20,7 @@ export default function Modal({open, onClose, icon, title, description, children
         <div
             className={clsx(
                 "fixed w-full h-full top-0 left-0 inset-0 overflow-hidden flex items-center justify-center transition-all duration-300",
-                open ? 'z-50' : 'z-[-1]'
+                open ? 'z-50' : 'z-[-1] hidden'
             )}
         >
             <div

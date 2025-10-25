@@ -9,6 +9,8 @@ import Link from "next/link";
 import {Button} from "@/components/base/buttons/button";
 import {Badge} from "@/components/base/badges/badges";
 import {Bell01, LayoutGrid01, Microphone01} from "@untitledui/icons";
+import Image from "next/image";
+import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 
 export default function HomePage() {
     return (
@@ -20,8 +22,10 @@ export default function HomePage() {
             <main className="flex flex-col items-center text-center min-h-screen bg-white">
                 {/* Hero */}
                 <section className="w-full max-w-5xl py-24 px-6">
-                    <h1 className="text-5xl font-bold tracking-tight mb-4">
-                        Grade smarter. Teach better.
+                    {/*<GradeflowLogo className="mx-auto mb-8"/>*/}
+
+                    <h1 className="text-5xl font-bold tracking-tight mb-8">
+                        An <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block ">educator</span>-first,<br/> <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block">AI</span> powered grading tool.
                     </h1>
                     <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
                         Gradeflow helps educators receive creative assignments, record feedback, generate summaries, and
@@ -44,18 +48,21 @@ export default function HomePage() {
                         </Button>
                     </div>
                     <div className="mt-16 flex justify-center">
-                        {/*<Image*/}
-                        {/*    src="/images/dashboard-preview.png"*/}
-                        {/*    alt="Gradeflow dashboard"*/}
-                        {/*    width={900}*/}
-                        {/*    height={500}*/}
-                        {/*    className="rounded-2xl shadow-xl"*/}
-                        {/*/>*/}
+                        <Image
+                            src="/images/dashboard-preview.png"
+                            alt="Gradeflow dashboard"
+                            width={900}
+                            height={500}
+                            className="rounded-2xl shadow-xl rounded-lg"
+                        />
                     </div>
                 </section>
 
                 {/* Features */}
-                <section className="bg-gray-50 w-full py-20">
+                <section className="bg-gray-50 w-full py-20 min-h-96">
+                    <h2 className="text-5xl font-semibold mb-8 text-center">
+                        Features
+                    </h2>
                     <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 px-6">
                         <Feature
                             icon={<Microphone01 data-icon className="inline-block align-sub mr-1"/>}
@@ -77,36 +84,28 @@ export default function HomePage() {
 
                 {/* How it works */}
                 <section className="w-full max-w-5xl py-20 px-6 text-left">
-                    <h2 className="text-3xl font-semibold mb-8 text-center">
+                    <h2 className="text-5xl font-semibold mb-8 text-center">
                         How it works
                     </h2>
-                    <ol className="space-y-6 text-gray-700 text-center">
-                        <li className="flex items-center justify-center gap-2 text-lg">
-                            <Badge size="lg">1</Badge> Teachers create an assignment and share a link
-                            with students.
-                        </li>
-                        <li className="flex items-center justify-center gap-2 text-lg">
-                            <Badge size="lg">2</Badge> Students submit their assignments and teachers can provide feedback
-                            via voice or text.
-                        </li>
-                        <li className="flex items-center justify-center gap-2 text-lg">
-                            <Badge size="lg">3</Badge> Teachers can review submissions, generate summaries, submit feedback to students,
-                            and manage assignments.
-                        </li>
+                    <ol className="space-y-8 font-medium max-w-3xl mx-auto">
+                        <Step index={1} description="Teachers create an assignment and share a link with students." />
+                        <Step index={2} description="Students submit their assignments and teachers can provide feedback via voice or text." />
+                        <Step index={3} description="Teachers can review submissions, generate summaries, submit feedback to students, and manage assignments." />
                     </ol>
                 </section>
 
                 {/* CTA */}
-                <section className="bg-blue-600 text-white py-20 w-full text-center">
-                    <h2 className="text-4xl font-bold mb-6">
+                <section className="bg-gray-50 py-20 w-full text-center">
+                    <h2 className="text-4xl font-bold mb-10">
                         Start grading with Gradeflow today.
                     </h2>
-                    <Link
+                    <Button
                         href="/signup"
-                        className="bg-white text-blue-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100"
+                        color="primary"
+                        size="lg"
                     >
                         Create your free account
-                    </Link>
+                    </Button>
                 </section>
             </main>
         </div>
@@ -115,9 +114,15 @@ export default function HomePage() {
 
 function Feature({ icon, title, description }) {
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
-            <h3 className="text-xl font-semibold mb-2">{icon} {title}</h3>
-            <p className="text-gray-600">{description}</p>
+        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition min-h-52 flex flex-col justify-center gap-4">
+            <h3 className="text-xl font-semibold">{icon} {title}</h3>
+            <p className="text-gray-600 ">{description}</p>
         </div>
     );
+}
+
+function Step({ index, description}){
+    return <li className="flex gap-4 text-xl">
+        <span className="font-deco text-4xl">{index}.</span> {description}
+    </li>
 }

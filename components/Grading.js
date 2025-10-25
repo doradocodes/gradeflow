@@ -5,6 +5,8 @@ import GradingRubric from "@/components/GradingRubric";
 import {useEffect, useState} from "react";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 import {getSubmission} from "@/utils/firestore";
+import FeedbackSummary from "@/components/FeedbackSummary";
+import Modal from "@/components/Modal";
 
 export default function Grading({ submissionId }) {
     console.log('submissionId', submissionId)
@@ -12,6 +14,7 @@ export default function Grading({ submissionId }) {
 
     const [submission, setSubmission] = useState(null);
     const [currentFile, setCurrentFile] = useState(null);
+    const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
 
     useEffect(() => {
@@ -35,6 +38,14 @@ export default function Grading({ submissionId }) {
             submission={submission}
             currentFile={currentFile}
             setCurrentFile={setCurrentFile}
+            onOpenSummary={() => setIsSummaryOpen(true)}
         />
+        <Modal
+            open={isSummaryOpen}
+            onClose={() => setIsSummaryOpen(false)}
+            title="Feedback summary"
+        >
+            <FeedbackSummary submissionId={submission.id} />
+        </Modal>
     </div>
 }

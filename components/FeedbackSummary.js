@@ -1,62 +1,49 @@
-import {useState} from "react";
-import {ChevronDown, ChevronUp, MagicWand02, Pencil01} from "@untitledui/icons";
+import {useEffect, useRef, useState} from "react";
+import {ChevronDown, ChevronUp, MagicWand02, Pencil01, Save01, Share01, Share06, Voicemail} from "@untitledui/icons";
 import clsx from "clsx";
 import {Button} from "@/components/base/buttons/button";
 import {TextArea} from "@/components/base/textarea/textarea";
 import {Input} from "@/components/base/input/input";
-import {updateSubmission} from "@/utils/firestore";
+import {getSubmission, updateSubmission} from "@/utils/firestore";
 
-export default function FeedbackSummary({ submission }) {
+export default function FeedbackSummary({ submissionId }) {
     const [openTranscript, setOpenTranscript] = useState(false);
-    const [feedback, setFeedback] = useState(submission.feedback || {});
+    const [feedback, setFeedback] = useState({});
     const [isEditing, setIsEditing] = useState(false);
+
+    useEffect(() => {
+        const load = async () => {
+            const submission = await getSubmission(submissionId);
+            setFeedback(submission.feedback || {});
+        }
+        load();
+    }, [])
 
     const onSubmit = async () => {
         const data = {
             feedback: feedback,
+
         };
-        await updateSubmission(submission.id, data);
+        await updateSubmission(submissionId, data);
     }
 
     const formatSummary = (summary) => {
-        return summary.map((item) => {
-            return <div key={item.category} className="mb-4">
-                <div className="flex items-center justify-between mb-2">
-                    <p className="font-bold text-xl">{item.category}</p>
-                    {isEditing ?
-                        <Input type="number" size="sm" className="max-w-1/6" defaultValue={item.estimated_points} onChange={(value) => {
-                            const newObj = summary.map(i => {
-                                if (i.category === item.category) {
-                                    return {
-                                        ...i,
-                                        estimated_points: parseInt(value),
-                                    }
-                                }
-                                return i;
-                            });
-                            setFeedback({...feedback, summary: newObj});
-                        }}/>
-                        :
-                        <p className={"font-bold text-xl flex gap-2"}><MagicWand02 className="text-gray-400" /> {item.estimated_points} points</p>
-                    }
-                </div>
-                {isEditing ?
-                    <TextArea rows={5} defaultValue={item.summary} onChange={(value) => {
-                        const newObj = summary.map(i => {
-                            if (i.category === item.category) {
-                                return {
-                                    ...i,
-                                    summary: value,
-                                }
+        return summary.map((item, index) => {
+            return <Category data={item} onSave={(updatedValues) => {
+                const data = {
+                    ...feedback,
+                    summary: feedback.summary.map((summaryItem, summaryIndex) => {
+                        if (summaryIndex === index) {
+                            return {
+                                ...summaryItem,
+                                ...updatedValues
                             }
-                            return i;
-                        });
-                        setFeedback({...feedback, summary: newObj});
-                    }}/>
-                    :
-                    <p>{item.summary}</p>
-                }
-            </div>
+                        }
+                        return summaryItem;
+                    })
+                };
+                console.log('updated data', data);
+            }} />;
         });
     }
 
@@ -74,7 +61,7 @@ export default function FeedbackSummary({ submission }) {
         {/*Transcript*/}
         <div className="border-b border-gray-200">
             <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-bold my-4">Transcript</h2>
+                <h2 className="text-2xl font-bold my-4"><Voicemail className=" inline-block mr-1" />Transcript</h2>
                 {openTranscript ?
                     <ChevronUp data-icon className="text-gray-400" onClick={() => setOpenTranscript(false)}/>
                     :
@@ -84,28 +71,109 @@ export default function FeedbackSummary({ submission }) {
                 openTranscript ? 'h-auto' : 'h-0 overflow-hidden',
                 'transition-all duration-300'
             ])}>
-                <p className="mb-4">{feedback.transcript}</p>
+                <p className="mb-4 italic text-gray-400">{feedback.transcript}</p>
             </div>
         </div>
 
         {/*Summary*/}
         <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold my-4">Summary</h2>
-            { isEditing ?
-                <Button size="sm" iconLeading={<Pencil01 data-icon />} onClick={() => {
-                    setIsEditing(false);
-                    onSubmit();
-                }}>Save</Button>
-                :
-                <Button size="sm" iconLeading={<Pencil01 data-icon />} onClick={() => setIsEditing(true)}>Edit</Button>
-            }
+            <h2 className="text-2xl font-bold my-4"><MagicWand02 className=" inline-block" /> Summary</h2>
         </div>
         {feedback.summary && <>
             <div>{formatSummary(feedback.summary)}</div>
-            <p className="text-xl font-bold border-t border-gray-300 py-4">Final score: {getFinalPoints(feedback.summary)}</p>
+            <div className="flex justify-between border-t border-gray-300 py-4">
+                <p className="text-xl font-bold">Final score</p>
+                <p className="text-xl font-bold text-right">{getFinalPoints(feedback.summary)} points</p>
+            </div>
         </>
         }
 
-        <Button color="primary" className="w-full mt-4" size="lg">Share with student</Button>
+        <div className="mt-6">
+            { isEditing ?
+                <Button
+                    className="w-full"
+                    color="primary"
+                    size="lg"
+                    iconLeading={<Save01 data-icon />}
+                    onClick={() => {
+                        setIsEditing(false);
+                        onSubmit();
+                    }}>Save edits</Button>
+                :
+                <div className="grid grid-cols-2 align-middle gap-2">
+                    <Button
+                        color="secondary"
+                        size="lg"
+                        iconLeading={<Pencil01 data-icon />}
+                        onClick={() => setIsEditing(true)}
+                    >Edit feedback</Button>
+                    <Button
+                        color="primary"
+                        size="lg"
+                        iconLeading={<Share06 data-icon />}
+                    >Share with student</Button>
+                </div>
+            }
+        </div>
     </>
+}
+
+function Category({ data, onSave }) {
+    const [isEditing, setIsEditing] = useState(false);
+
+    const categoryNameRef = useRef(null);
+    const categoryPointsRef = useRef(null);
+    const summaryRef = useRef(null);
+
+    const getEditedValues = () => {
+        return {
+            category: categoryNameRef.current.value,
+            estimated_points: categoryPointsRef.current.value,
+            summary: summaryRef.current.textContent,
+        }
+    };
+
+    const handleSave = () => {
+        const editedValues = getEditedValues();
+        onSave(editedValues);
+    };
+
+    return <div key={data?.category} className="mb-4">
+        <div className="flex items-center justify-between mb-2">
+            {isEditing ?
+                <div className="flex gap-2 w-full">
+                    <Input ref={categoryNameRef} type="text" size="sm" className="w-full" defaultValue={data.category}/>
+                    <Input ref={categoryPointsRef} type="number" size="sm" className="max-w-1/6" defaultValue={data.estimated_points}/>
+                </div>
+                :
+                <>
+                    <p className="font-bold text-xl">{data.category}</p>
+                    <p className={"font-bold text-xl flex gap-2"}>{data.estimated_points} points</p>
+                </>
+            }
+            {isEditing ?
+                <Button
+                    className="w-full"
+                    color="tertiary"
+                    size="sm"
+                    iconLeading={<Save01 data-icon />}
+                    onClick={() => {
+                        setIsEditing(false);
+                        handleSave();
+                    }}></Button>
+                :
+                <Button
+                    color="tertiary"
+                    size="sm"
+                    iconLeading={<Pencil01 data-icon />}
+                    onClick={() => setIsEditing(true)}
+                ></Button>
+            }
+        </div>
+        {isEditing ?
+            <TextArea ref={summaryRef} rows={5} defaultValue={data.summary} />
+            :
+            <p className="text-md">{data.summary}</p>
+        }
+    </div>
 }

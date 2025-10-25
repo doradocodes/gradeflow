@@ -8,15 +8,15 @@ const dmSans = DM_Sans({
 });
 
 export const metadata = {
-    title: "GradeFlow",
+    title: "Gradeflow",
     description: "A AI-enhanced grading app for teachers",
 };
 
 export default function RootLayout({children}) {
     return (
-        <html lang="en" className={dmSans.variable}>
+        <html lang="en" className={`${dmSans.variable}`}>
         <body
-            className={`antialiased bg-gray-100`}
+            className={`antialiased`}
         >
         <AuthProvider>
             {children}
