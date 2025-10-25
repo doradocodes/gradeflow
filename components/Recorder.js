@@ -8,10 +8,11 @@ import Markdown from "react-markdown";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import {
-    Check,
+    AnnotationDots,
+    Check, CheckCircleBroken,
     ChevronDown,
     Microphone01,
-    PauseSquare,
+    PauseSquare, PlaySquare, Recording01, Stop,
     StopSquare,
 } from "@untitledui/icons";
 import {updateSubmission} from "@/utils/firestore";
@@ -130,15 +131,22 @@ export default function Recorder({ onEndRecording }) {
 
     return (
         <div className="flex flex-col gap-4">
-            {status === "idle" && !audioURL ? (
+            {status === "idle" && !audioURL && (
                 <>
                     <Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />
-                    <Button className="w-full" onClick={handleStart}>
+                    <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={handleStart}
+                        iconLeading={<Recording01 />}
+                    >
                         Record feedback
                     </Button>
                 </>
-            ) : (
-                <div className="flex items-center justify-between gap-2">
+            )}
+
+            <div className="flex items-center justify-between gap-2">
+                {status !== "idle" &&  (
                     <div className="flex items-center gap-2">
                         <Microphone01
                             size={20}
@@ -165,9 +173,9 @@ export default function Recorder({ onEndRecording }) {
                                             onClick={() => setSelectedDeviceId(d.deviceId)}
                                             icon={selectedDeviceId === d.deviceId ? Check : null}
                                         >
-                                          <span className="text-left">
-                                            {d.label || `Microphone ${d.deviceId}`}
-                                          </span>
+                                              <span className="text-left">
+                                                {d.label || `Microphone ${d.deviceId}`}
+                                              </span>
                                         </Dropdown.Item>
                                     ))}
                                 </Dropdown.Menu>
@@ -176,37 +184,33 @@ export default function Recorder({ onEndRecording }) {
 
                         <span>{secondsToMinutesAndSeconds(recordingTime)}</span>
                     </div>
+                )}
 
-                    {status === "recording" && (
-                        <div className="flex flex-nowrap items-center">
-                            <Button
-                                color="tertiary"
-                                size="md"
-                                iconLeading={<PauseSquare data-icon />}
-                                aria-label="Pause"
-                                onClick={pause}
-                            />
-                            <Button
-                                color="tertiary"
-                                size="md"
-                                iconLeading={<StopSquare data-icon />}
-                                aria-label="Stop"
-                                onClick={handleStop}
-                            />
-                        </div>
-                    )}
-                    {status === "paused" && (
-                        <>
-                            <Button className="text-xs" onClick={resume}>
-                                Resume
-                            </Button>
-                            <Button className="text-xs" onClick={handleStop}>
-                                Stop
-                            </Button>
-                        </>
-                    )}
-                </div>
-            )}
+                {status === "recording" && (
+                    <Button
+                        color="tertiary"
+                        size="md"
+                        iconLeading={<PauseSquare data-icon />}
+                        aria-label="Pause"
+                        onClick={pause}
+                    />
+                )}
+                {status === "paused" && (
+                    <Button
+                        color="tertiary"
+                        size="md"
+                        iconLeading={<PlaySquare data-icon />}
+                        aria-label="Resume"
+                        onClick={resume}
+                    />
+                )}
+            </div>
+
+            {status === "recording" &&
+                <Button size="lg" className="w-full cursor-pointer" iconLeading={<CheckCircleBroken data-icon />} aria-label="Stop" onClick={handleStop}>
+                    End recording
+                </Button>
+            }
 
             {status === "idle" && audioURL && (
                 <>
@@ -215,10 +219,10 @@ export default function Recorder({ onEndRecording }) {
                         <audio controls src={audioURL} className="w-full" />
                     </div>
                     <div>
-                        <Button className="w-full cursor-pointer" onClick={onSubmit}>
-                            End recording
+                        <Button size="lg" className="w-full cursor-pointer" iconLeading={<AnnotationDots data-icon />} onClick={onSubmit}>
+                            Summarize feedback
                         </Button>
-                        <p className="text-sm italic text-gray-400 mt-1">
+                        <p className="text-sm italic text-gray-400 mt-2 text-center">
                             Your recording be saved, categorized and turned into written
                             feedback automatically.
                         </p>

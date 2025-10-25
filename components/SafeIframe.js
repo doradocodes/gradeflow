@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {Button} from "@/components/base/buttons/button";
+import {ArrowUpRight} from "@untitledui/icons";
 
 const BLOCKED_DOMAINS = [
     'github.com',
@@ -43,6 +44,7 @@ export default function SafeIframe({ src, onMouseOver, onMouseOut, isIframeHover
                     size="lg"
                     href={src}
                     target="_blank"
+                    iconTrailing={<ArrowUpRight data-icon />}
                 >Open in a new tab</Button>
             </div>
         );
