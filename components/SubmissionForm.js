@@ -55,13 +55,16 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline, defau
     const getInputPicker = (name, type, required, defaultValue) => {
         switch(type) {
             case 'url':
-                return <div>
-                    <div className="flex items-center gap-1">
-                        <CheckCircle size={20} data-icon className="opacity-25"/>
-                        <span className="text-sm text-secondary font-medium">{name}</span>
-                        <Badge type="color" color="brand" size="sm">{type}</Badge>
+                return <div className="flex gap-2">
+                    {/*<CheckCircle size={20} data-icon className="opacity-25"/>*/}
+                    <div className="w-full">
+                        <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm text-secondary font-medium">{name}</span>
+                            <Badge type="color" color="brand" size="sm">{type}</Badge>
+                        </div>
+                        <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype="url" defaultValue={defaultValue || ''} className="w-full" />
                     </div>
-                    <Input type={"text"} name={`deliverables-${name}`} required={required} data-filetype="url" defaultValue={defaultValue || ''} />
+
                 </div>
             default:
                 return <div>
@@ -119,7 +122,7 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline, defau
                     ))}
                 </div>
             </div>
-            <Button className="w-full" type={"submit"}>Submit</Button>
+            <Button size="lg" className="w-full" type={"submit"}>Submit</Button>
             {error && <p className="text-red-500">{error}</p>}
         </form>
         <Modal

@@ -1,16 +1,9 @@
 "use client"; // because we’re using hooks + fetch
 
-import { useState } from "react";
-import {useAuth} from "@/components/AuthProvider";
-import {redirect} from "next/navigation";
-import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 import {HeaderNavigationBase} from "@/components/application/app-navigation/header-navigation";
-import Link from "next/link";
 import {Button} from "@/components/base/buttons/button";
-import {Badge} from "@/components/base/badges/badges";
 import {Bell01, LayoutGrid01, Microphone01} from "@untitledui/icons";
 import Image from "next/image";
-import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 
 export default function HomePage() {
     return (
@@ -21,9 +14,7 @@ export default function HomePage() {
 
             <main className="flex flex-col items-center text-center min-h-screen bg-white">
                 {/* Hero */}
-                <section className="w-full max-w-5xl py-24 px-6">
-                    {/*<GradeflowLogo className="mx-auto mb-8"/>*/}
-
+                <section className="bg-gray-50 w-full py-24 px-6">
                     <h1 className="text-5xl font-bold tracking-tight mb-8">
                         An <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block ">educator</span>-first,<br/> <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block">AI</span> powered grading tool.
                     </h1>
@@ -37,19 +28,19 @@ export default function HomePage() {
                             color="primary"
                             size="lg"
                         >
-                            Get Started
+                            Get started
                         </Button>
                         <Button
                             href="/demo"
                             color="secondary"
                             size="lg"
                         >
-                            Watch Demo
+                            Watch demo
                         </Button>
                     </div>
                     <div className="mt-16 flex justify-center">
                         <Image
-                            src="/images/dashboard-preview.png"
+                            src="/demo.png"
                             alt="Gradeflow dashboard"
                             width={900}
                             height={500}
@@ -59,7 +50,7 @@ export default function HomePage() {
                 </section>
 
                 {/* Features */}
-                <section className="bg-gray-50 w-full py-20 min-h-96">
+                <section className="w-full py-20 min-h-96">
                     <h2 className="text-5xl font-semibold mb-8 text-center">
                         Features
                     </h2>

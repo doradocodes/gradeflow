@@ -129,7 +129,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 </Dropdown.Popover>
             </Dropdown.Root>
         </div>
-        <div className="px-4">
+        <div className="px-4 max-h-96 overflow-y-auto">
             <RubricCards rubric={assignment.rubric} />
         </div>
         <div className="p-4">

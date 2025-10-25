@@ -4,7 +4,7 @@ import {createSubmission} from "@/utils/firestore";
 import SubmissionForm from "@/components/SubmissionForm";
 
 export default function StudentSubmissionForm({assignment}) {
-    return <div className="bg-white p-8 rounded-lg shadow-md w-full">
+    return <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full">
         <SubmissionForm
             deliverables={assignment.deliverables}
             isInline={false}
