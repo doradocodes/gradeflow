@@ -283,14 +283,14 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     description="Grading rubric for this assignment."
                 >
                     {currentAssignment && <RubricCards rubric={currentAssignment.rubric} isGrid={false}/>}
-                    {/*{isAddingRubric ?*/}
-                    {/*    <div className="w-full border border-gray-300 rounded-lg mt-4">*/}
-                    {/*        <RubricForm onSubmit={onCreateRubric}/>*/}
-                    {/*    </div>*/}
-                    {/*    :*/}
-                    {/*    <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)}*/}
-                    {/*            iconLeading={Plus}>Add category</Button>*/}
-                    {/*}*/}
+                    {isAddingRubric ?
+                        <div className="w-full border border-gray-300 rounded-lg mt-4">
+                            <RubricForm onSubmit={onCreateRubric}/>
+                        </div>
+                        :
+                        <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)}
+                                iconLeading={Plus}>Add category</Button>
+                    }
                 </SlideoutMenu>
             </>
 
