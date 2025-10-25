@@ -29,8 +29,14 @@ export default function LoginForm() {
             // redirect to home page
             redirect('/assignments');
         } catch (err) {
-            console.error("Auth error:", err.message);
-            setError(err.message);
+            console.log("Auth error:", err.code);
+            if (err.code === 'auth/user-not-found') {
+                setError("No user found with this email.");
+            } else if (err.code.indexOf('auth/invalid-credential') > -1) {
+                setError("Invalid credentials. Please check your email and password.");
+            } else {
+                setError(err.message);
+            }
         }
     }
 
@@ -55,7 +61,7 @@ export default function LoginForm() {
                     <Link className="text-brand-primary text-sm" href="#">Forgot password?</Link>
                 </div>
                 <Button className="mt-4" color="primary" size="lg" type="submit">Login</Button>
-                {error && <p className="text-red-500 mt-4">{error}</p>}
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             </form>
         </div>
         <p className="mt-4"> Don't have an account? <Link className="text-brand-primary font-bold" href="/signup">Sign up →</Link></p>

@@ -89,7 +89,7 @@ export default function SignupForm() {
                 }} />
 
                 <Button className="mt-4" color="primary" size="lg" type="submit">Sign up</Button>
-                {error && <p className="text-red-500 text-xs">{error}</p>}
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
             </form>
         </div>
         <p className=" text-center"> Already have an account? <Link className="text-brand-primary font-bold" href="/login">Login →</Link></p>
