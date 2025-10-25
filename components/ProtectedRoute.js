@@ -9,7 +9,9 @@ export default function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
     const router = useRouter();
 
-    if (loading) return <LoadingIndicator type="line-simple" size="sm" />;
+    if (loading) return <div className="min-h-screen flex items-center justify-center">
+        <LoadingIndicator type="line-simple" size="sm" />
+    </div>;
 
     if (!user) {
         // redirect if not logged in

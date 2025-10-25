@@ -9,22 +9,19 @@ import {getSubmission, updateSubmission} from "@/utils/firestore";
 export default function FeedbackSummary({ submissionId }) {
     const [openTranscript, setOpenTranscript] = useState(false);
     const [feedback, setFeedback] = useState({});
-    const [isEditing, setIsEditing] = useState(false);
+
+    const load = async () => {
+        const submission = await getSubmission(submissionId);
+        setFeedback(submission.feedback || {});
+    };
 
     useEffect(() => {
-        const load = async () => {
-            const submission = await getSubmission(submissionId);
-            setFeedback(submission.feedback || {});
-        }
         load();
-    }, [])
+    }, []);
 
-    const onSubmit = async () => {
-        const data = {
-            feedback: feedback,
-
-        };
+    const onSubmit = async (data) => {
         await updateSubmission(submissionId, data);
+        await load();
     }
 
     const formatSummary = (summary) => {
@@ -42,7 +39,9 @@ export default function FeedbackSummary({ submissionId }) {
                         return summaryItem;
                     })
                 };
-                console.log('updated data', data);
+                onSubmit({
+                    feedback: data
+                });
             }} />;
         });
     }
@@ -89,31 +88,14 @@ export default function FeedbackSummary({ submissionId }) {
         }
 
         <div className="mt-6">
-            { isEditing ?
+            <div>
                 <Button
-                    className="w-full"
+                    className="w-full mb-4"
                     color="primary"
                     size="lg"
-                    iconLeading={<Save01 data-icon />}
-                    onClick={() => {
-                        setIsEditing(false);
-                        onSubmit();
-                    }}>Save edits</Button>
-                :
-                <div className="grid grid-cols-2 align-middle gap-2">
-                    <Button
-                        color="secondary"
-                        size="lg"
-                        iconLeading={<Pencil01 data-icon />}
-                        onClick={() => setIsEditing(true)}
-                    >Edit feedback</Button>
-                    <Button
-                        color="primary"
-                        size="lg"
-                        iconLeading={<Share06 data-icon />}
-                    >Share with student</Button>
-                </div>
-            }
+                    iconLeading={<Share06 data-icon />}
+                >Share with student</Button>
+            </div>
         </div>
     </>
 }
@@ -138,42 +120,45 @@ function Category({ data, onSave }) {
         onSave(editedValues);
     };
 
-    return <div key={data?.category} className="mb-4">
+    return <div key={data?.category} className="mb-8">
         <div className="flex items-center justify-between mb-2">
-            {isEditing ?
-                <div className="flex gap-2 w-full">
-                    <Input ref={categoryNameRef} type="text" size="sm" className="w-full" defaultValue={data.category}/>
-                    <Input ref={categoryPointsRef} type="number" size="sm" className="max-w-1/6" defaultValue={data.estimated_points}/>
-                </div>
-                :
-                <>
-                    <p className="font-bold text-xl">{data.category}</p>
-                    <p className={"font-bold text-xl flex gap-2"}>{data.estimated_points} points</p>
-                </>
-            }
-            {isEditing ?
-                <Button
-                    className="w-full"
-                    color="tertiary"
-                    size="sm"
-                    iconLeading={<Save01 data-icon />}
-                    onClick={() => {
-                        setIsEditing(false);
-                        handleSave();
-                    }}></Button>
-                :
-                <Button
-                    color="tertiary"
-                    size="sm"
-                    iconLeading={<Pencil01 data-icon />}
-                    onClick={() => setIsEditing(true)}
-                ></Button>
-            }
+            <div className="flex gap-2 w-full">
+                {isEditing ?
+                    <>
+                        <Input ref={categoryNameRef} type="text" size="sm" className="w-full" defaultValue={data.category}/>
+                        <div className="flex gap-2">
+                            <Input ref={categoryPointsRef} type="number" size="sm" defaultValue={data.estimated_points}/>
+                            <Button
+                                className="w-full"
+                                color="tertiary"
+                                size="sm"
+                                iconLeading={<Save01 data-icon />}
+                                onClick={() => {
+                                    setIsEditing(false);
+                                    handleSave();
+                                }}></Button>
+                        </div>
+                    </>
+                    :
+                    <>
+                        <p className="font-bold text-xl w-full">{data.category}</p>
+                        <div className="flex gap-2 items-center">
+                            <p className="font-bold text-xl whitespace-nowrap">{data.estimated_points} points</p>
+                            <Button
+                                color="tertiary"
+                                size="sm"
+                                iconLeading={<Pencil01 data-icon />}
+                                onClick={() => setIsEditing(true)}
+                            ></Button>
+                        </div>
+                    </>
+                }
+            </div>
         </div>
         {isEditing ?
             <TextArea ref={summaryRef} rows={5} defaultValue={data.summary} />
             :
-            <p className="text-md">{data.summary}</p>
+            <p className="text-md min-h-20">{data.summary}</p>
         }
     </div>
 }

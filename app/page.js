@@ -42,9 +42,9 @@ export default function HomePage() {
                             <h1 className="text-5xl font-bold tracking-tight mb-8">
                                 An <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block ">educator</span>-first,<br/> <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block">AI</span> -powered grading tool.
                             </h1>
-                            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
-                                Gradeflow helps educators receive creative assignments, record feedback, generate summaries, and
-                                manage assignments — all in one place.
+                            <p className="text-lg text-gray-600 max-w-xl mb-8">
+                                See how Gradeflow helps you organize submissions, give meaningful feedback, and save hours of time.<br/><br/>
+                                <b>Your first assignment is completely free</b> — no credit card, no setup friction. Just create, teach, and flow.
                             </p>
                             <div className="flex gap-4">
                                 <Button

@@ -153,7 +153,7 @@ export default function SubmissionsTable({ assignment }) {
 
 function GradeCell({ item }) {
     const [openFeedback, setOpenFeedback] = useState(false);
-    return <>
+    return <div className="flex gap-2">
         {item.feedback && <>
             <SlideoutMenu
                 open={openFeedback}
@@ -173,7 +173,7 @@ function GradeCell({ item }) {
         </>
         }
         <Button
-            color="secondary"
+            color="primary"
             size="sm"
             iconTrailing={<ArrowRight size={12}/>}
             href={`/submissions/${item.id}`}
@@ -181,5 +181,5 @@ function GradeCell({ item }) {
         >
             Grade
         </Button>
-    </>
+    </div>
 }
