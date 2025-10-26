@@ -8,17 +8,12 @@ import {Button} from "@/components/base/buttons/button";
 import {Check, ChevronDown, ChevronUp, HelpCircle, MagicWand02} from "@untitledui/icons";
 import clsx from "clsx";
 import {Dropdown} from "@/components/base/dropdown/dropdown";
-import Modal from "@/components/Modal";
-import Markdown from "react-markdown";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
-import {Tooltip, TooltipTrigger} from "@/components/base/tooltip/tooltip";
-import FeedbackSummary from "@/components/FeedbackSummary";
 
 export default function GradingRubric({ submission, assignmentId, studentName, currentFile, setCurrentFile, onOpenSummary }) {
     const [assignment, setAssignment] = useState(null);
     const [collapsed, setCollapsed] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
-    const [isSummarized, setIsSummarized] = useState(!!submission?.feedback);
 
     useEffect(() => {
         async function load() {
@@ -30,14 +25,16 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
 
     const getRubricString = (rubric) => {
         if (!rubric) return '';
-        let arr = Object.keys(rubric).map((key, i) => {
-            return `${i + 1}. ${key}: ${rubric[key].criteria} (${rubric[key].maxPoints} points)`
+        let arr = rubric.map((r, i) => {
+            return `${i + 1}. ${r.categoryName}: ${r.criteria} (${r.maxPoints} points)`
         });
         return arr.join('\n');
     }
 
-    const submitFeedback = async (audioUrl) => {
-        if (audioUrl.indexOf("cloudinary") < 0) {
+    const submitFeedback = async (audioUrl, audioFile) => {
+        setIsTranscribing(true);
+        let url = audioUrl;
+        if (audioFile) {
             const cloudinaryURL =
                 "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
             const formData = new FormData();
@@ -50,40 +47,43 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 body: formData,
             });
             const data = await response.json();
+            url = data.secure_url;
         }
 
-        setIsTranscribing(true);
-        await handleTranscribe(audioUrl);
-        setIsTranscribing(false);
+        const rubricString = getRubricString(assignment?.rubric);
+        await handleTranscribe(url, rubricString);
     };
 
-    const handleTranscribe = async (audioUrl) => {
-        // Summarize the audio using the API
-        const res = await fetch("/api/summarize", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                audioUrl,
-                rubric: getRubricString(assignment?.rubric),
-            }),
-        });
+    const handleTranscribe = async (audioUrl, rubric) => {
+        try {
+            // Summarize the audio using the API
+            const res = await fetch("/api/summarize", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    audioUrl,
+                    rubric,
+                }),
+            });
 
-        const data = await res.json();
+            const data = await res.json();
 
-        // Update the submission with the transcription and summary
-        const updatedSubmission = {
-            feedback: {
-                audioUrl: audioUrl,
-                transcript: data.text,
-                summary: data.summary,
-                createdAt: new Date(),
+            // Update the submission with the transcription and summary
+            const updatedSubmission = {
+                feedback: {
+                    audioUrl: audioUrl,
+                    transcript: data.text,
+                    summary: data.summary,
+                    createdAt: new Date(),
+                }
             }
-        }
-        await updateSubmission(submission.id, updatedSubmission);
+            await updateSubmission(submission.id, updatedSubmission);
 
-        setTranscript(data.text);
-        setSummary(data.summary);
-        onOpenSummary(true);
+            onOpenSummary(true);
+        } catch (error) {
+            console.error("Error during transcription and summarization:", error);
+        }
+        setIsTranscribing(false);
     };
 
     if (!assignment) return null;
@@ -140,7 +140,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 :
                 <Recorder onEndRecording={submitFeedback} />
             }
-            {isSummarized &&
+            {!!submission.feedback &&
                 <Button color="tertiary" className="w-full color-gray-500 mt-2" onClick={() => onOpenSummary(true)}>View summary</Button>
             }
         </div>

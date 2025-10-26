@@ -1,10 +1,7 @@
 "use client";
 
-import { db } from "@/utils/firebase";
-import { collection, addDoc } from "firebase/firestore";
 import { useState, useEffect, useRef } from "react";
 import { useRecorder } from "@/hooks/recorderHooks";
-import Markdown from "react-markdown";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import {
@@ -12,10 +9,8 @@ import {
     Check, CheckCircleBroken,
     ChevronDown,
     Microphone01,
-    PauseSquare, PlaySquare, Recording01, Stop,
-    StopSquare,
+    PauseSquare, PlaySquare, Recording01,
 } from "@untitledui/icons";
-import {updateSubmission} from "@/utils/firestore";
 import {Input} from "@/components/base/input/input";
 
 export default function Recorder({ onEndRecording }) {
@@ -126,7 +121,7 @@ export default function Recorder({ onEndRecording }) {
     };
 
     const onSubmit = async () => {
-        onEndRecording(audioURL);
+        onEndRecording(audioURL, audioFile);
     };
 
     return (
@@ -145,46 +140,45 @@ export default function Recorder({ onEndRecording }) {
                 </>
             )}
 
-            <div className="flex items-center justify-between gap-2">
-                {status !== "idle" &&  (
-                    <div className="flex items-center gap-2">
-                        <Microphone01
-                            size={20}
-                            className={`transition-opacity duration-100 ${
-                                isSpeaking ? "opacity-100" : "opacity-10"
-                            }`}
-                        />
 
-                        <Dropdown.Root>
-                            <Button
-                                className="group"
-                                color="secondary"
-                                iconTrailing={ChevronDown}
-                            >
-                                {devices.find((d) => d.deviceId === selectedDeviceId)?.label ||
-                                    "Select microphone"}
-                            </Button>
+            {status !== "idle" &&  (<div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                    <Microphone01
+                        size={20}
+                        className={`transition-opacity duration-100 ${
+                            isSpeaking ? "opacity-100" : "opacity-10"
+                        }`}
+                    />
 
-                            <Dropdown.Popover>
-                                <Dropdown.Menu>
-                                    {devices?.map((d) => (
-                                        <Dropdown.Item
-                                            key={d.deviceId}
-                                            onClick={() => setSelectedDeviceId(d.deviceId)}
-                                            icon={selectedDeviceId === d.deviceId ? Check : null}
-                                        >
-                                              <span className="text-left">
-                                                {d.label || `Microphone ${d.deviceId}`}
-                                              </span>
-                                        </Dropdown.Item>
-                                    ))}
-                                </Dropdown.Menu>
-                            </Dropdown.Popover>
-                        </Dropdown.Root>
+                    <Dropdown.Root>
+                        <Button
+                            className="group"
+                            color="secondary"
+                            iconTrailing={ChevronDown}
+                        >
+                            {devices.find((d) => d.deviceId === selectedDeviceId)?.label ||
+                                "Select microphone"}
+                        </Button>
 
-                        <span>{secondsToMinutesAndSeconds(recordingTime)}</span>
-                    </div>
-                )}
+                        <Dropdown.Popover>
+                            <Dropdown.Menu>
+                                {devices?.map((d) => (
+                                    <Dropdown.Item
+                                        key={d.deviceId}
+                                        onClick={() => setSelectedDeviceId(d.deviceId)}
+                                        icon={selectedDeviceId === d.deviceId ? Check : null}
+                                    >
+                                          <span className="text-left">
+                                            {d.label || `Microphone ${d.deviceId}`}
+                                          </span>
+                                    </Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown.Popover>
+                    </Dropdown.Root>
+
+                    <span>{secondsToMinutesAndSeconds(recordingTime)}</span>
+                </div>
 
                 {status === "recording" && (
                     <Button
@@ -204,7 +198,7 @@ export default function Recorder({ onEndRecording }) {
                         onClick={resume}
                     />
                 )}
-            </div>
+            </div>)}
 
             {status === "recording" &&
                 <Button size="lg" className="w-full cursor-pointer" iconLeading={<CheckCircleBroken data-icon />} aria-label="Stop" onClick={handleStop}>
