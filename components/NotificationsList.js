@@ -10,23 +10,9 @@ export default function NotificationsList({ notifications }) {
     }
 
     const formatTime = (timestamp) => {
-        // Format time as "X minutes/hours/days ago"
-        const now = new Date();
-        const notificationTime = new Date(timestamp);
-        const diff = now - notificationTime;
-        const seconds = Math.floor(diff / 1000);
-        const minutes = Math.floor(seconds / 60);
-        const hours = Math.floor(minutes / 60);
-        const days = Math.floor(hours / 24);
-        if (days > 0) {
-            return `${days} day${days > 1 ? 's' : ''} ago`;
-        } else if (hours > 0) {
-            return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-        } else if (minutes > 0) {
-            return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-        } else {
-            return 'Just now';
-        }
+        console.log(timestamp)
+        const data = new Date(timestamp.seconds);
+        return data.toLocaleDateString("en-US", {})
     }
 
     const getNotificationDisplay = (notification) => {
@@ -48,7 +34,7 @@ export default function NotificationsList({ notifications }) {
     }
 
     return (
-        <div className="">
+        <div className="max-h-[60vh] overflow-y-auto">
             <ul>
                 {notifications.map((n) => (
                     <li key={n.id} className="border-b border-gray-200 py-2" onClick={() => onClick(n)}>

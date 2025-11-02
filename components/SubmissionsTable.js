@@ -12,7 +12,7 @@ import {Button} from "@/components/base/buttons/button";
 import {Table, TableCard, TableRowActionsDropdown} from "@/components/application/table/table";
 import {Badge} from "@/components/base/badges/badges";
 import {ButtonUtility} from "@/components/base/buttons/button-utility";
-import {ArrowRight, Edit01, Plus, Trash01} from "@untitledui/icons";
+import {ArrowRight, Award01, CheckVerified01, Edit01, Plus, Trash01} from "@untitledui/icons";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 import FeedbackSummary from "@/components/FeedbackSummary";
 import SlideoutMenu from "@/components/SlideoutMenu";
@@ -70,6 +70,10 @@ export default function SubmissionsTable({ assignment }) {
         }
     }
 
+    const getGradedCount = (submissions) => {
+        return submissions.filter(submission => submission.feedback).length;
+    }
+
     if (!submissions) return <div className="flex justify-center items-center h-full">
         <LoadingIndicator type="line-simple" size="sm" />
     </div>
@@ -78,7 +82,7 @@ export default function SubmissionsTable({ assignment }) {
         <TableCard.Root className="mb-4">
             <TableCard.Header
                 title="Submissions"
-                badge={`${submissions.length} submissions`}
+                badge={`${submissions.length} submissions / ${getGradedCount(submissions)} graded`}
                 contentTrailing={
                     <div className="absolute top-5 right-4 md:right-6">
                         <TableRowActionsDropdown/>
@@ -153,7 +157,14 @@ export default function SubmissionsTable({ assignment }) {
 
 function GradeCell({ item }) {
     const [openFeedback, setOpenFeedback] = useState(false);
-    return <div className="flex gap-2">
+
+    const getFinalPoints = (summary) => {
+        return summary.reduce((acc, item) => {
+            return acc + parseInt(item.estimated_points);
+        }, 0)
+    }
+
+    return <div className="flex gap-2 items-center">
         {item.feedback && <>
             <SlideoutMenu
                 open={openFeedback}
@@ -164,17 +175,19 @@ function GradeCell({ item }) {
                 <FeedbackSummary submissionId={item.id} />
             </SlideoutMenu>
             <Button
-                color="secondary"
+                color="primary"
                 size="sm"
                 onClick={() => setOpenFeedback(true)}
+                iconTrailing={<CheckVerified01 size={16} />}
             >
-                View feedback
+                {getFinalPoints(item.feedback.summary)}
             </Button>
         </>
         }
         <Button
-            color="primary"
+            color="secondary"
             size="sm"
+            target="_blank"
             iconTrailing={<ArrowRight size={12}/>}
             href={`/submissions/${item.id}`}
             as={Link}

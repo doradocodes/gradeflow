@@ -143,7 +143,7 @@ function Category({ data, onSave }) {
                     <>
                         <p className="font-bold text-xl w-full">{data.category}</p>
                         <div className="flex gap-2 items-center">
-                            <p className="font-bold text-xl whitespace-nowrap">{data.estimated_points} points</p>
+                            <p className="font-bold text-xl whitespace-nowrap">{data.estimated_points} {data.max_points && `/ ${data.max_points}`} points</p>
                             <Button
                                 color="tertiary"
                                 size="sm"

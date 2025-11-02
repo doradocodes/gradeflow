@@ -5,7 +5,7 @@ import Recorder from "@/components/Recorder";
 import RubricCards from "@/components/RubricCards";
 import {getAssignment, updateSubmission} from "@/utils/firestore";
 import {Button} from "@/components/base/buttons/button";
-import {Check, ChevronDown, ChevronUp, HelpCircle, MagicWand02} from "@untitledui/icons";
+import {AlertTriangle, Check, ChevronDown, ChevronUp, HelpCircle, MagicWand02} from "@untitledui/icons";
 import clsx from "clsx";
 import {Dropdown} from "@/components/base/dropdown/dropdown";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
@@ -14,6 +14,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
     const [assignment, setAssignment] = useState(null);
     const [collapsed, setCollapsed] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         async function load() {
@@ -42,12 +43,19 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
             formData.append("upload_preset", "gradeflow");
 
             // Upload the audio file to Cloudinary
-            const response = await fetch(cloudinaryURL, {
-                method: "POST",
-                body: formData,
-            });
-            const data = await response.json();
-            url = data.secure_url;
+            try {
+                const response = await fetch(cloudinaryURL, {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await response.json();
+                url = data.secure_url;
+            } catch (error) {
+                console.error("Error uploading audio file:", error);
+                setIsTranscribing(false);
+                setError(error);
+                return;
+            }
         }
 
         const rubricString = getRubricString(assignment?.rubric);
@@ -82,6 +90,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
             onOpenSummary(true);
         } catch (error) {
             console.error("Error during transcription and summarization:", error);
+            setError(error);
         }
         setIsTranscribing(false);
     };
@@ -139,6 +148,12 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 </div>
                 :
                 <Recorder onEndRecording={submitFeedback} />
+            }
+            {error &&
+                <div className="mt-2 text-sm text-red-500 text-center">
+                    <AlertTriangle className="w-4 h-4 inline-block mr-2" />
+                    <span className="text-center">Something went wrong: {error.message}</span>
+                </div>
             }
             {!!submission.feedback &&
                 <Button color="tertiary" className="w-full color-gray-500 mt-2" onClick={() => onOpenSummary(true)}>View summary</Button>
