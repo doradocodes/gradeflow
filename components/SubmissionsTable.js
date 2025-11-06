@@ -95,6 +95,7 @@ export default function SubmissionsTable({ assignment }) {
                     <Table.Head id="status" label="Status" allowsSorting/>
                     <Table.Head id="deliverables" label="Deliverables"/>
                     <Table.Head id="grade" label="Grade"/>
+                    <Table.Head id="notes" label="Notes"/>
                     <Table.Head id="actions"/>
                 </Table.Header>
                 <Table.Body items={submissions}>
@@ -116,6 +117,7 @@ export default function SubmissionsTable({ assignment }) {
                             <Table.Cell>
                                 <GradeCell item={item} />
                             </Table.Cell>
+                            <Table.Cell>{item.notes || '-'}</Table.Cell>
                             <Table.Cell className="px-4">
                                 <div className="flex justify-end gap-0.5">
                                     <ButtonUtility onClick={() => onDeleteSubmission(item)} size="xs" color="tertiary" tooltip="Delete" icon={Trash01}/>

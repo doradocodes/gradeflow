@@ -10,6 +10,7 @@ import Modal from "@/components/Modal";
 import {InputGroup} from "@/components/base/input/input-group";
 import clsx from "clsx";
 import {Badge} from "@/components/base/badges/badges";
+import {TextArea} from "@/components/base/textarea/textarea";
 
 export default function SubmissionForm({ onSubmit, deliverables, isInline, defaultValues }) {
     const [isSubmitted, setIsSubmitted] = useState(false);
@@ -43,8 +44,10 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline, defau
                     type: d.type,
                 }
             }),
-            submittedAt: currentDate,
+            notes: e.target.elements['notes'] ? e.target.elements['notes'].value : '',
+            submittedAt: defaultValues?.submittedAt ? new Date(defaultValues?.submittedAt.seconds) : currentDate,
         };
+        console.log(data)
         await onSubmit(data);
         if (!isInline) {
             setIsSubmitted(true);
@@ -120,6 +123,10 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline, defau
                             )}
                         </div>
                     ))}
+                </div>
+                <div className="flex flex-col gap-2">
+                    <h2 className="font-bold text-secondary mb-4">Notes</h2>
+                    <TextArea defaultValue={defaultValues?.notes} name="notes" rows={5} placeholder={"Any notes about the submission."} />
                 </div>
             </div>
             <Button size="lg" className="w-full" type={"submit"}>Submit</Button>

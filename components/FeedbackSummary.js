@@ -9,9 +9,12 @@ import {getSubmission, updateSubmission} from "@/utils/firestore";
 export default function FeedbackSummary({ submissionId }) {
     const [openTranscript, setOpenTranscript] = useState(false);
     const [feedback, setFeedback] = useState({});
+    const [studentName, setStudentName] = useState('');
+    const [isCopied, setIsCopied] = useState(false);
 
     const load = async () => {
         const submission = await getSubmission(submissionId);
+        setStudentName(submission.studentName || '');
         setFeedback(submission.feedback || {});
     };
 
@@ -52,6 +55,25 @@ export default function FeedbackSummary({ submissionId }) {
         }, 0)
     }
 
+    const onShareFeedback = (summary) => {
+        // convert summary to plain text that can be copy/pasted into an email
+        const formatSummaryEmail = () => {
+            let emailText = `Feedback Summary for ${studentName}:\n\n`
+            summary.forEach((item) => {
+                emailText += `${item.category} (${item.estimated_points}${item.max_points ? `/${item.max_points}` : ''} points)\n\n`;
+                emailText += `${item.summary}\n\n`;
+            });
+            emailText += `Final Score: ${getFinalPoints(summary)} points\n`;
+            return emailText;
+        }
+        // copy to clipboard
+        navigator.clipboard.writeText(formatSummaryEmail());
+        setIsCopied(true);
+        setTimeout(() => {
+            setIsCopied(false);
+        }, 2000);
+    }
+
     if (!feedback) {
         return null;
     }
@@ -90,11 +112,13 @@ export default function FeedbackSummary({ submissionId }) {
         <div className="mt-6">
             <div>
                 <Button
-                    className="w-full mb-4"
+                    className="w-full mb-2"
                     color="primary"
                     size="lg"
                     iconLeading={<Share06 data-icon />}
+                    onClick={() => onShareFeedback(feedback.summary)}
                 >Share with student</Button>
+                {isCopied && <p className="text-center text-gray-400">Copied to clipboard!</p>}
             </div>
         </div>
     </>

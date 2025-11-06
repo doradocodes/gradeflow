@@ -4,13 +4,13 @@ import {auth} from "@/utils/firebase";
 import {createUserWithEmailAndPassword, updateProfile, signOut} from "firebase/auth";
 import {useEffect, useState} from "react";
 import {Input} from "@/components/base/input/input";
-import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 import {Button} from "@/components/base/buttons/button";
 import Link from "next/link";
 import {createUser} from "@/utils/firestore";
 import {redirect} from "next/navigation";
 
 export default function SignupForm() {
+
     const [user, setUser] = useState(null);
 
     const [name, setName] = useState("");
@@ -29,11 +29,6 @@ export default function SignupForm() {
 
     async function handleAuth(e) {
         e.preventDefault();
-        console.log({
-            name,
-            email,
-            password,
-        })
         try {
             const result = await createUserWithEmailAndPassword(auth, email, password);
             await updateProfile(result.user, {
@@ -46,6 +41,7 @@ export default function SignupForm() {
                 email: email,
 
             })
+
             // redirect to home page
             window.location.href = "/assignments";
         } catch (err) {
