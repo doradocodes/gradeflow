@@ -5,7 +5,7 @@ import GradingRubric from "@/components/GradingRubric";
 import {useEffect, useState} from "react";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 import {getSubmission} from "@/utils/firestore";
-import FeedbackSummary from "@/components/FeedbackSummary";
+import FeedbackSummary from "@/components/forms/FeedbackSummary";
 import Modal from "@/components/Modal";
 
 export default function Grading({ submissionId }) {

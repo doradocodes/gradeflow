@@ -18,9 +18,9 @@ import SlideoutMenu from "@/components/SlideoutMenu";
 import SubmissionsTable from "@/components/SubmissionsTable";
 import {Badge} from "@/components/base/badges/badges";
 import RubricCards from "@/components/RubricCards";
-import RubricForm from "@/components/RubricForm";
+import RubricForm from "@/components/forms/RubricForm";
 import Modal from "@/components/Modal";
-import AssignmentsForm from "@/components/AssignmentsForm";
+import AssignmentsForm from "@/components/forms/AssignmentsForm";
 
 export default function AssignmentsList({title, date, direction}) {
     const {user, loading} = useAuth();

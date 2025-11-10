@@ -5,16 +5,16 @@ import {
     getSubmissionsByAssignment,
     updateSubmission
 } from "@/utils/firestore";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import Link from "next/link";
-import SubmissionForm from "@/components/SubmissionForm";
+import SubmissionForm from "@/components/forms/SubmissionForm";
 import {Button} from "@/components/base/buttons/button";
 import {Table, TableCard, TableRowActionsDropdown} from "@/components/application/table/table";
 import {Badge} from "@/components/base/badges/badges";
 import {ButtonUtility} from "@/components/base/buttons/button-utility";
 import {ArrowRight, Award01, CheckVerified01, Edit01, Plus, Trash01} from "@untitledui/icons";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
-import FeedbackSummary from "@/components/FeedbackSummary";
+import FeedbackSummary from "@/components/forms/FeedbackSummary";
 import SlideoutMenu from "@/components/SlideoutMenu";
 
 export default function SubmissionsTable({ assignment }) {
@@ -74,6 +74,27 @@ export default function SubmissionsTable({ assignment }) {
         return submissions.filter(submission => submission.feedback).length;
     }
 
+    const [sortDescriptor, setSortDescriptor] = useState({
+        column: "studentName",
+        direction: "ascending",
+    });
+
+    const sortedItems = useMemo(() => {
+        return submissions.sort((a, b) => {
+            const { column, direction } = sortDescriptor;
+            let compareA = a[column];
+            let compareB = b[column];
+
+            // Handle undefined or null values
+            if (compareA == null) compareA = "";
+            if (compareB == null) compareB = "";
+            if (compareA < compareB) return direction === "ascending" ? -1 : 1;
+            if (compareA > compareB) return direction === "ascending" ? 1 : -1;
+            return 0;
+
+        });
+    }, [sortDescriptor]);
+
     if (!submissions) return <div className="flex justify-center items-center h-full">
         <LoadingIndicator type="line-simple" size="sm" />
     </div>
@@ -89,7 +110,7 @@ export default function SubmissionsTable({ assignment }) {
                     </div>
                 }
             />
-            <Table aria-label="Submissions" className="w-full mb-4">
+            <Table aria-label="Submissions" className="w-full mb-4" sortDescriptor={sortDescriptor} onSortChange={setSortDescriptor}>
                 <Table.Header>
                     <Table.Head id="studentName" label="Student Name" allowsSorting isRowHeader/>
                     <Table.Head id="status" label="Status" allowsSorting/>
@@ -98,7 +119,7 @@ export default function SubmissionsTable({ assignment }) {
                     <Table.Head id="notes" label="Notes"/>
                     <Table.Head id="actions"/>
                 </Table.Header>
-                <Table.Body items={submissions}>
+                <Table.Body items={sortedItems}>
                     {(item) => (
                         <Table.Row id={item.id}>
                             <Table.Cell>{item.studentName}</Table.Cell>

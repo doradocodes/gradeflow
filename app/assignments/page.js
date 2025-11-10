@@ -7,7 +7,7 @@ import {NativeSelect} from "@/components/base/select/select-native";
 import { Tabs } from "@/components/application/tabs/tabs";
 import {Button} from "@/components/base/buttons/button";
 import {PlusCircle} from "@untitledui/icons";
-import AssignmentsForm from "@/components/AssignmentsForm";
+import AssignmentsForm from "@/components/forms/AssignmentsForm";
 import SlideoutMenu from "@/components/SlideoutMenu";
 import {createAssignment} from "@/utils/firestore";
 

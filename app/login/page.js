@@ -1,4 +1,4 @@
-import LoginForm from "@/components/LoginForm";
+import LoginForm from "@/components/forms/LoginForm";
 import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 
 export default function LoginPage() {

@@ -1,4 +1,4 @@
-import SignupForm from "@/components/SignupForm";
+import SignupForm from "@/components/forms/SignupForm";
 import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 
 export default function Signup() {

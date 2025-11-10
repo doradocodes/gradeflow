@@ -1,7 +1,7 @@
 import {createSubmission, getAssignment} from "@/utils/firestore";
-import SubmissionForm from "@/components/SubmissionForm";
+import SubmissionForm from "@/components/forms/SubmissionForm";
 import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
-import StudentSubmissionForm from "@/components/StudentSubmissionForm";
+import StudentSubmissionForm from "@/components/forms/StudentSubmissionForm";
 
 
 export default async function SubmitAssignmentPage({params}) {

@@ -54,7 +54,7 @@ export default function SafeIframe({ src, onMouseOver, onMouseOut, isIframeHover
         <iframe
             id="safe-iframe"
             src={src}
-            className={`w-9/12 h-4/5 border-1 border-gray-300 ${isIframeHovered ? 'outline-2 outline-blue-500 outline-offset-1' : ''}`}
+            className={`w-full h-full border-1 border-gray-300 ${isIframeHovered ? 'outline-2 outline-blue-500 outline-offset-1' : ''}`}
             style={{
                 transform: `translate(${pos.x}px, ${pos.y}px) scale(${scale})`,
                 transformOrigin: "0 0",

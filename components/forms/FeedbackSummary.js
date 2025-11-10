@@ -27,25 +27,27 @@ export default function FeedbackSummary({ submissionId }) {
         await load();
     }
 
+    const handleEdit = (updatedValues, index) => {
+        const data = {
+            ...feedback,
+            summary: feedback.summary.map((summaryItem, summaryIndex) => {
+                if (summaryIndex === index) {
+                    return {
+                        ...summaryItem,
+                        ...updatedValues
+                    }
+                }
+                return summaryItem;
+            })
+        };
+        onSubmit({
+            feedback: data
+        });
+    }
+
     const formatSummary = (summary) => {
         return summary.map((item, index) => {
-            return <Category data={item} onSave={(updatedValues) => {
-                const data = {
-                    ...feedback,
-                    summary: feedback.summary.map((summaryItem, summaryIndex) => {
-                        if (summaryIndex === index) {
-                            return {
-                                ...summaryItem,
-                                ...updatedValues
-                            }
-                        }
-                        return summaryItem;
-                    })
-                };
-                onSubmit({
-                    feedback: data
-                });
-            }} />;
+            return <Category data={item} onSave={(updatedValues) => handleEdit(updatedValues, index)} />;
         });
     }
 
@@ -58,7 +60,7 @@ export default function FeedbackSummary({ submissionId }) {
     const onShareFeedback = (summary) => {
         // convert summary to plain text that can be copy/pasted into an email
         const formatSummaryEmail = () => {
-            let emailText = `Feedback Summary for ${studentName}:\n\n`
+            let emailText = `Feedback for ${studentName}:\n\n`
             summary.forEach((item) => {
                 emailText += `${item.category} (${item.estimated_points}${item.max_points ? `/${item.max_points}` : ''} points)\n\n`;
                 emailText += `${item.summary}\n\n`;
@@ -127,40 +129,42 @@ export default function FeedbackSummary({ submissionId }) {
 function Category({ data, onSave }) {
     const [isEditing, setIsEditing] = useState(false);
 
-    const categoryNameRef = useRef(null);
-    const categoryPointsRef = useRef(null);
-    const summaryRef = useRef(null);
+    const formRef = useRef(null);
 
-    const getEditedValues = () => {
-        return {
-            category: categoryNameRef.current.value,
-            estimated_points: categoryPointsRef.current.value,
-            summary: summaryRef.current.textContent,
+    const handleSave = (e) => {
+        e.preventDefault();
+
+        const editedValues = {
+            category: formRef.current.elements.category.value,
+            estimated_points: formRef.current.elements.estimated_points.value,
+            summary: formRef.current.elements.summary.value,
         }
-    };
-
-    const handleSave = () => {
-        const editedValues = getEditedValues();
+        console.log(editedValues);
         onSave(editedValues);
+        setIsEditing(false);
     };
 
-    return <div key={data?.category} className="mb-8">
+    const handleEdit = (e) => {
+        e.preventDefault();
+        setIsEditing(true);
+    }
+
+    return <form ref={formRef} key={data?.category} className="mb-8">
         <div className="flex items-center justify-between mb-2">
             <div className="flex gap-2 w-full">
                 {isEditing ?
                     <>
-                        <Input ref={categoryNameRef} type="text" size="sm" className="w-full" defaultValue={data.category}/>
+                        <Input name="category" type="text" size="sm" className="w-full" defaultValue={data.category}/>
                         <div className="flex gap-2">
-                            <Input ref={categoryPointsRef} type="number" size="sm" defaultValue={data.estimated_points}/>
+                            <Input name="estimated_points" type="number" size="sm" defaultValue={data.estimated_points}/>
                             <Button
+                                type="submit"
                                 className="w-full"
                                 color="tertiary"
                                 size="sm"
                                 iconLeading={<Save01 data-icon />}
-                                onClick={() => {
-                                    setIsEditing(false);
-                                    handleSave();
-                                }}></Button>
+                                onClick={handleSave}
+                            ></Button>
                         </div>
                     </>
                     :
@@ -169,10 +173,11 @@ function Category({ data, onSave }) {
                         <div className="flex gap-2 items-center">
                             <p className="font-bold text-xl whitespace-nowrap">{data.estimated_points} {data.max_points && `/ ${data.max_points}`} points</p>
                             <Button
+                                type="button"
                                 color="tertiary"
                                 size="sm"
                                 iconLeading={<Pencil01 data-icon />}
-                                onClick={() => setIsEditing(true)}
+                                onClick={handleEdit}
                             ></Button>
                         </div>
                     </>
@@ -180,9 +185,9 @@ function Category({ data, onSave }) {
             </div>
         </div>
         {isEditing ?
-            <TextArea ref={summaryRef} rows={5} defaultValue={data.summary} />
+            <TextArea name="summary" rows={5} defaultValue={data.summary} />
             :
             <p className="text-md min-h-20">{data.summary}</p>
         }
-    </div>
+    </form>
 }

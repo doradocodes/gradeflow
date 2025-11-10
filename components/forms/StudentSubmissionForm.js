@@ -1,7 +1,7 @@
 'use client';
 
 import {createSubmission} from "@/utils/firestore";
-import SubmissionForm from "@/components/SubmissionForm";
+import SubmissionForm from "@/components/forms/SubmissionForm";
 
 export default function StudentSubmissionForm({assignment}) {
     return <div className="bg-gray-100 p-8 rounded-lg shadow-lg w-full">
