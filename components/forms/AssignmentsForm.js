@@ -18,10 +18,6 @@ export default function AssignmentsForm({defaultValue, onClose, onSubmit}) {
     const formRef = useRef(null);
     const [isAddingDeliverable, setIsAddingDeliverable] = useState(false);
 
-    // const [courseName, setCourseName] = useState(defaultValue?.courseName || '');
-    // const [title, setTitle] = useState(defaultValue?.title || '');
-    // const [description, setDescription] = useState(defaultValue?.description || '');
-    // const [dueDate, setDueDate] = useState(defaultValue?.dueDate || '');
     const [deliverables, setDeliverables] = useState(defaultValue?.deliverables || []);
 
     const onSubmitForm = async (e) => {
@@ -38,7 +34,7 @@ export default function AssignmentsForm({defaultValue, onClose, onSubmit}) {
             data.id = defaultValue.id;
         }
         console.log(data);
-        // await onSubmit(data);
+        await onSubmit(data);
         onClose();
     }
 
@@ -74,7 +70,7 @@ export default function AssignmentsForm({defaultValue, onClose, onSubmit}) {
                     {deliverables.map((d, index) => (
                         <li key={index} className="flex items-center gap-2 mb-2">
                             <span>{index + 1}. {d.name}</span> <Badge type="color" color="brand"
-                                                                      size="sm">{d.fileType}</Badge>
+                                                                      size="sm">{d.type}</Badge>
                             {d.required && <Badge type="color" color="brand" size="sm">Required</Badge>}
                             <ButtonUtility size="xs" color="tertiary" tooltip="Remove" icon={XClose}
                                            onClick={() => removeDeliverable(index)}/>
