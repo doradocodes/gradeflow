@@ -13,7 +13,7 @@ export default function LoginForm() {
     const [user, setUser] = useState(null);
     const formRef = useRef(null);
     const [error, setError] = useState(null);
-    const [isLoginWithPassword, setIsLoginWithPassword] = useState(false);
+    const [isLoginWithPassword, setIsLoginWithPassword] = useState(true);
 
     // Listen for changes
     useEffect(() => {
