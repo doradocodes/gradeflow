@@ -1,20 +1,19 @@
 "use client";
 
 import {auth} from "@/utils/firebase";
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,} from "firebase/auth";
-import {useEffect, useState} from "react";
+import {getAuth, signInWithEmailAndPassword, sendSignInLinkToEmail} from "firebase/auth";
+import {useEffect, useRef, useState} from "react";
 import {Input} from "@/components/base/input/input";
-import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
-import {Checkbox} from "@/components/base/checkbox/checkbox";
 import Link from "next/link";
 import {Button} from "@/components/base/buttons/button";
 import {redirect} from "next/navigation";
+import {useAuth} from "@/components/AuthProvider";
 
 export default function LoginForm() {
-    const [user, setUser] = useState(null);
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const formRef = useRef(null);
+    const { user, loading } = useAuth();
     const [error, setError] = useState(null);
+    const [isLoginWithPassword, setIsLoginWithPassword] = useState(false);
 
     // Listen for changes
     useEffect(() => {
@@ -24,6 +23,10 @@ export default function LoginForm() {
 
     async function handleAuth(e) {
         e.preventDefault();
+
+        const email = formRef.current.elements["Email"].value;
+        const password = formRef.current.elements["Password"].value;
+
         try {
             await signInWithEmailAndPassword(auth, email, password);
             // redirect to home page
@@ -40,8 +43,31 @@ export default function LoginForm() {
         }
     }
 
-    async function handleLogout() {
-        await signOut(auth);
+    const handlePasswordLogin = () => {
+        setIsLoginWithPassword(true);
+    }
+
+    const handleEmailLogin = async () => {
+        const email = formRef.current.elements["Email"].value;
+        if (!email) {
+            setError("Please enter your email to receive the login link.");
+        }
+
+        const actionCodeSettings = {
+            // URL you want to redirect back to. The domain (www.example.com) for this
+            // URL must be in the authorized domains list in the Firebase Console.
+            url: 'https://www.gradeflow.xyz/assignments',
+            // This must be true.
+            handleCodeInApp: true,
+            // The domain must be configured in Firebase Hosting and owned by the project.
+            linkDomain: 'gradeflow.xyz',
+        };
+        try {
+            const auth = await getAuth();
+            await sendSignInLinkToEmail(auth, email, actionCodeSettings)
+        } catch (e) {
+            console.error("Error sending email link:", e);
+        }
     }
 
     if (user) {
@@ -50,19 +76,26 @@ export default function LoginForm() {
 
     return <>
         <div className="w-full max-w-md  bg-white rounded-2xl shadow-md p-6">
-            <form className="flex flex-col gap-4" onSubmit={handleAuth}>
-                <Input type={"email"} name={"Email"} label="Email" placeholder={"Enter your email"} required onChange={value => setEmail(value)}/>
-                <Input type={"password"} name={"Password"} label="Password" placeholder={"Enter your password"} required onChange={value => setPassword(value)}/>
+            <form className="flex flex-col gap-4" onSubmit={handleAuth} ref={formRef}>
+                <Input type={"email"} name={"Email"} label="Email" placeholder={"Enter your email"} required/>
+                {isLoginWithPassword && <>
+                    <Input type={"password"} name={"Password"} label="Password" placeholder={"Enter your password"} required/>
 
-                <div className="flex items-center justify-between flex-wrap">
-                    {/*<div>*/}
-                    {/*    <Checkbox label="Remember me" size="sm" />*/}
-                    {/*</div>*/}
-                    <Link className="text-brand-primary text-sm" href="#">Forgot password?</Link>
-                </div>
-                <Button className="mt-4" color="primary" size="lg" type="submit">Login</Button>
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                    <div className="flex items-center justify-between flex-wrap">
+                        {/*<div>*/}
+                        {/*    <Checkbox label="Remember me" size="sm" />*/}
+                        {/*</div>*/}
+                        <Link className="text-brand-primary text-sm" href="#">Forgot password?</Link>
+                    </div>
+                    <Button className="mt-4" color="primary" size="lg" type="submit">Login</Button>
+                    {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                </>}
             </form>
+            {!isLoginWithPassword && <>
+                <Button className="mt-4 w-full" color="primary" size="lg" onClick={handlePasswordLogin}>Log in with password</Button>
+                <Button className="mt-4 w-full" color="secondary" size="lg" onClick={handleEmailLogin}>Login with email code</Button>
+            </>}
+            {error && <p className="text-red-500 text-sm text-center mt-4">{error}</p>}
         </div>
         <p className="mt-4"> Don't have an account? <Link className="text-brand-primary font-bold" href="/signup">Sign up →</Link></p>
     </>
