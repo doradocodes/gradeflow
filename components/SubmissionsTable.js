@@ -119,7 +119,7 @@ export default function SubmissionsTable({ assignment }) {
                     <Table.Head id="notes" label="Notes"/>
                     <Table.Head id="actions"/>
                 </Table.Header>
-                <Table.Body items={sortedItems}>
+                <Table.Body items={submissions}>
                     {(item) => (
                         <Table.Row id={item.id}>
                             <Table.Cell>{item.studentName}</Table.Cell>
