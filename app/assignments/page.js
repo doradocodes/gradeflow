@@ -8,8 +8,7 @@ import {Tabs} from "@/components/application/tabs/tabs";
 
 
 export default function AssignmentsPage() {
-    const [openAssignmentsForm, setOpenAssignmentsForm] = useState(false);
-    const [selectedTabIndex, setSelectedTabIndex] = useState("current");
+    const [selectedTabIndex, setSelectedTabIndex] = useState("all");
 
     const tabs = [
         {id: 'all', label: "All assignments", filters: {}},
