@@ -10,7 +10,6 @@ export default function NotificationsList({ notifications }) {
     }
 
     const formatTime = (timestamp) => {
-        console.log(timestamp)
         const data = new Date(timestamp.seconds);
         return data.toLocaleDateString("en-US", {})
     }

@@ -47,7 +47,6 @@ export default function SubmissionForm({ onSubmit, deliverables, isInline, defau
             notes: e.target.elements['notes'] ? e.target.elements['notes'].value : '',
             submittedAt: defaultValues?.submittedAt ? new Date(defaultValues?.submittedAt.seconds) : currentDate,
         };
-        console.log(data)
         await onSubmit(data);
         if (!isInline) {
             setIsSubmitted(true);

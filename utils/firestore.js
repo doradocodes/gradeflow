@@ -86,7 +86,7 @@ export async function getAssignment(id) {
  * @param {Array} [params.deliverables]
  * @returns {Promise<void>}
  */
-export async function createAssignment({ userId, courseName, title, description, dueDate, deliverables }) {
+export async function createAssignment({ userId, courseName, title, description, dueDate, deliverables, rubric }) {
     try {
         await addDoc(collection(db, "assignments"), {
             teacherId: userId,
@@ -94,7 +94,7 @@ export async function createAssignment({ userId, courseName, title, description,
             title,
             description,
             dueDate,
-            rubric: {},
+            rubric: rubric || [],
             deliverables: deliverables || [],
             createdAt: new Date(),
         });

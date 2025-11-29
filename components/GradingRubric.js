@@ -36,20 +36,18 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         setIsTranscribing(true);
         let url = audioUrl;
         if (audioFile) {
-            const cloudinaryURL =
-                "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
             const formData = new FormData();
             formData.append("file", audioFile);
             formData.append("upload_preset", "gradeflow");
 
             // Upload the audio file to Cloudinary
             try {
-                const response = await fetch(cloudinaryURL, {
+                const response = await fetch('/upload', {
                     method: "POST",
                     body: formData,
                 });
                 const data = await response.json();
-                url = data.secure_url;
+                url = data.audioUrl;
             } catch (error) {
                 console.error("Error uploading audio file:", error);
                 setIsTranscribing(false);

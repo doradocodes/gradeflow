@@ -9,7 +9,6 @@ import FeedbackSummary from "@/components/forms/FeedbackSummary";
 import Modal from "@/components/Modal";
 
 export default function Grading({ submissionId }) {
-    console.log('submissionId', submissionId)
     if (!submissionId) return <LoadingIndicator type="line-simple" size="sm" />
 
     const [submission, setSubmission] = useState(null);

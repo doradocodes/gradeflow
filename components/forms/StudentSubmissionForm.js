@@ -9,7 +9,6 @@ export default function StudentSubmissionForm({assignment}) {
             deliverables={assignment.deliverables}
             isInline={false}
             onSubmit={async (values) => {
-                console.log(values);
                 const data = {
                     ...values,
                     assignmentId: assignment.id,

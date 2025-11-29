@@ -73,16 +73,21 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
         onLoadAssignments();
     }
 
-    const onCreateRubric = async (values) => {
+    const onAddRubricCategory = async (values) => {
+        setRubric([
+            ...rubric,
+            values
+        ]);
+    }
+
+    const onUpdateRubric = async (values) => {
         await onEditAssignment({
             id: currentAssignment.id,
-            rubric: [
-                ...(currentAssignment.rubric || []),
-                values
-            ]
+            rubric,
         });
-        setIsAddingRubric(false);
+        setCurrentAssignment(null);
         setOpenRubric(false);
+        setIsAddingRubric(false);
         onLoadAssignments();
     }
 
@@ -282,15 +287,18 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     title={`${currentAssignment?.title} Rubric`}
                     description="Grading rubric for this assignment."
                 >
-                    {currentAssignment && <RubricCards rubric={currentAssignment.rubric} isGrid={false}/>}
-                    {isAddingRubric ?
-                        <div className="w-full border border-gray-300 rounded-lg mt-4">
-                            <RubricForm onSubmit={onCreateRubric}/>
-                        </div>
-                        :
-                        <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)}
-                                iconLeading={Plus}>Add category</Button>
-                    }
+                    <div>
+                        {currentAssignment && <RubricCards rubric={currentAssignment.rubric} isGrid={false}/>}
+                        {isAddingRubric ?
+                            <div className="w-full border border-gray-300 rounded-lg mt-4">
+                                <RubricForm onSubmit={onAddRubricCategory}/>
+                            </div>
+                            :
+                            <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)}
+                                    iconLeading={Plus}>Add category</Button>
+                        }
+                    </div>
+                    <Button color={"primary"} className="mt-6" onClick={onUpdateRubric}>Update rubric</Button>
                 </SlideoutMenu>
             </>
 

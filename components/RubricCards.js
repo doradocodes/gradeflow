@@ -8,7 +8,7 @@ const COLORS = [
     'bg-sky-100 text-sky-800',
 ];
 
-export default function RubricCards({ rubric  }) {
+export default function RubricCards({ rubric = [] }) {
     return <>
         <div className={clsx(
             "grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] overflow-y-auto",

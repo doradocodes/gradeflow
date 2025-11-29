@@ -22,7 +22,6 @@ export default function AssignmentsPage() {
     ];
 
     const onTabChange = (key) => {
-        console.log(key);
         setSelectedTabIndex(key);
     }
 
