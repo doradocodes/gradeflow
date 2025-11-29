@@ -10,8 +10,8 @@ import {redirect} from "next/navigation";
 import {useAuth} from "@/components/AuthProvider";
 
 export default function LoginForm() {
+    const [user, setUser] = useState(null);
     const formRef = useRef(null);
-    const { user, loading } = useAuth();
     const [error, setError] = useState(null);
     const [isLoginWithPassword, setIsLoginWithPassword] = useState(false);
 
@@ -51,6 +51,7 @@ export default function LoginForm() {
         const email = formRef.current.elements["Email"].value;
         if (!email) {
             setError("Please enter your email to receive the login link.");
+            return;
         }
 
         const actionCodeSettings = {
@@ -60,7 +61,7 @@ export default function LoginForm() {
             // This must be true.
             handleCodeInApp: true,
             // The domain must be configured in Firebase Hosting and owned by the project.
-            linkDomain: 'gradeflow.xyz',
+            // linkDomain: 'gradeflow.xyz',
         };
         try {
             const auth = await getAuth();
