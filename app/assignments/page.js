@@ -4,24 +4,35 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import AssignmentsList from "@/components/AssignmentsList";
 import {useState} from "react";
 import {NativeSelect} from "@/components/base/select/select-native";
-import { Tabs } from "@/components/application/tabs/tabs";
-import {Button} from "@/components/base/buttons/button";
-import {PlusCircle} from "@untitledui/icons";
-import AssignmentsForm from "@/components/forms/AssignmentsForm";
-import SlideoutMenu from "@/components/SlideoutMenu";
-import {createAssignment} from "@/utils/firestore";
+import {Tabs} from "@/components/application/tabs/tabs";
 
 
 export default function AssignmentsPage() {
     const [openAssignmentsForm, setOpenAssignmentsForm] = useState(false);
-    const [selectedTabIndex, setSelectedTabIndex] = useState("current_assignments");
+    const [selectedTabIndex, setSelectedTabIndex] = useState("current");
 
     const tabs = [
-        { id: "current_assignments", label: "Current Assignments"},
-        { id: "past_assignments", label: "Past Assignments" },
+        {id: 'all', label: "All assignments", filters: {}},
+        {
+            id: "current", label: "Current assignments", filters: {
+                date: new Date(),
+                direction: "after",
+            }
+        },
+        {
+            id: "past", label: "Past assignments", filters: {
+                date: new Date(),
+                direction: "before",
+            }
+        },
     ];
 
     const onTabChange = (key) => {
+        setSelectedTabIndex(key);
+    }
+
+    const onButtonSelect = (keys) => {
+        const key = Array.from(keys)[0];
         setSelectedTabIndex(key);
     }
 
@@ -34,7 +45,7 @@ export default function AssignmentsPage() {
                     aria-label="Tabs"
                     value={selectedTabIndex}
                     onChange={(event) => setSelectedTabIndex(event.target.value)}
-                    options={tabs.map((tab) => ({ label: tab.label, value: tab.id }))}
+                    options={tabs.map((tab) => ({label: tab.label, value: tab.id}))}
                     className="w-80 md:hidden"
                 />
                 <Tabs selectedKey={selectedTabIndex} onSelectionChange={onTabChange} className="w-max max-md:hidden">
@@ -43,11 +54,9 @@ export default function AssignmentsPage() {
                     </Tabs.List>
                 </Tabs>
             </div>
-            {selectedTabIndex === "current_assignments" ?
-                <AssignmentsList title="Current Assignments" date={new Date()} direction={"after"}/>
-                :
-                <AssignmentsList title="Past Assignments" date={new Date()} direction={"before"}/>
-            }
+            {tabs.map((tab) => (
+                tab.id === selectedTabIndex && <AssignmentsList title={tab.label} filters={tab.filters} key={tab.id} />
+            ))}
         </div>
     </ProtectedRoute>
 }

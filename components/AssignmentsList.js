@@ -21,25 +21,29 @@ import RubricCards from "@/components/RubricCards";
 import RubricForm from "@/components/forms/RubricForm";
 import Modal from "@/components/Modal";
 import AssignmentsForm from "@/components/forms/AssignmentsForm";
+import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 
-export default function AssignmentsList({title, date, direction}) {
+export default function AssignmentsList({title, filters = {}}) {
     const {user, loading} = useAuth();
     const [assignments, setAssignments] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         load();
-    }, [title, date, direction]);
+    }, [title, filters]);
 
     async function load() {
-        const data = await getAssignments(user.uid, {
-            date: date,
-            direction: direction,
-        });
+        const data = await getAssignments(user.uid, filters);
         setAssignments(data);
+        setIsLoading(false);
     }
 
     return <>
-        <AssignmentsTable title={title} assignments={assignments} onLoadAssignments={load}/>
+        {isLoading ?
+            <LoadingIndicator type="line-simple" size="sm" />
+            :
+            <AssignmentsTable title={title} assignments={assignments} onLoadAssignments={load}/>
+        }
     </>
 }
 
@@ -139,10 +143,10 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                 <Table aria-label="Assignments" sortDescriptor={sortDescriptor}
                        onSortChange={setSortDescriptor}>
                     <Table.Header>
-                        <Table.Head id="courseName" label="Course name" isRowHeader allowsSorting/>
-                        <Table.Head id="title" label="Title" allowsSorting/>
-                        <Table.Head id="description" label="Description" allowsSorting tooltip="This is a tooltip"/>
-                        <Table.Head id="dueDate" label="Due date" allowsSorting/>
+                        <Table.Head id="courseName" label="Course name" isRowHeader allowsSorting={false}/>
+                        <Table.Head id="title" label="Title" allowsSorting={false}/>
+                        <Table.Head id="description" label="Description" allowsSorting={false} tooltip="This is a tooltip"/>
+                        <Table.Head id="dueDate" label="Due date" allowsSorting={false}/>
                         <Table.Head id="submissionLink" label="Submission Link"/>
                         <Table.Head id="submissions" label="Submissions"/>
                         <Table.Head id="rubric" label="Rubric"/>
