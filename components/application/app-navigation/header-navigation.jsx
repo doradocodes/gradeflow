@@ -1,6 +1,6 @@
 "use client";
 
-import {Bell01, SearchLg, Settings01} from "@untitledui/icons";
+import {Bell01, LogOut01, SearchLg, Settings01} from "@untitledui/icons";
 import {Button as AriaButton, DialogTrigger, Popover } from "react-aria-components";
 import {Avatar} from "@/components/base/avatar/avatar";
 import {Input} from "@/components/base/input/input";
@@ -17,6 +17,8 @@ import {useEffect, useState} from "react";
 import {collection, onSnapshot, orderBy, query, where} from "firebase/firestore";
 import {db} from "@/utils/firebase";
 import {Tooltip, TooltipTrigger} from "@/components/base/tooltip/tooltip";
+import {signOut} from "firebase/auth";
+import {auth} from "@/utils/firebase";
 
 export const HeaderNavigationBase = ({
                                          user,
@@ -64,12 +66,12 @@ export const HeaderNavigationBase = ({
 
                     <NavList items={items}/>
 
-                    { user &&
-                        <div className="mt-auto flex flex-col gap-4 px-2 py-4 lg:px-4 lg:py-6">
-                            <div className="flex flex-col gap-1">
+                    <div className="mt-auto flex flex-col gap-4 px-2 py-4 lg:px-4 lg:py-6">
+                        <div className="flex flex-col gap-1">
+                            {user && <>
                                 <NavItemBase
                                     type="link"
-                                    href="#"
+                                    href="/settings"
                                     icon={Settings01}
                                 >
                                     Settings
@@ -82,6 +84,15 @@ export const HeaderNavigationBase = ({
                                     Notifications
                                 </NavItemBase>
                                 <NavItemBase
+                                    type="button"
+                                    onClick={async () => {
+                                        await signOut(auth);
+                                    }}
+                                    icon={LogOut01}
+                                >
+                                    Sign out
+                                </NavItemBase>
+                                <NavItemBase
                                     type="link"
                                     href="#"
                                 >
@@ -90,14 +101,13 @@ export const HeaderNavigationBase = ({
                                                 src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_640.png"
                                                 size="md"/>
                                         <div>
-                                            <p className="text-primary text-sm font-semibold">{user}</p>
                                             <p className="truncate text-tertiary text-sm">{user.displayName || user.email}</p>
                                         </div>
                                     </div>
                                 </NavItemBase>
-                            </div>
+                            </>}
                         </div>
-                    }
+                    </div>
                 </aside>
             </MobileNavigationHeader>
 

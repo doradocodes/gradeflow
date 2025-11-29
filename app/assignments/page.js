@@ -30,11 +30,6 @@ export default function AssignmentsPage() {
         setSelectedTabIndex(key);
     }
 
-    const onButtonSelect = (keys) => {
-        const key = Array.from(keys)[0];
-        setSelectedTabIndex(key);
-    }
-
     return <ProtectedRoute>
         <div className="w-full max-w-container py-8 md:px-8 mx-auto z-10">
             <h1 className="text-2xl font-bold mb-2">Assignments</h1>

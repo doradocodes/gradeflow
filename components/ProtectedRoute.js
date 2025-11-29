@@ -1,13 +1,12 @@
 "use client";
 
 import { useAuth } from "@/components/AuthProvider";
-import { useRouter } from "next/navigation";
+import {redirect} from "next/navigation";
 import {HeaderNavigationBase} from "@/components/application/app-navigation/header-navigation";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 
 export default function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
-    const router = useRouter();
 
     if (loading) return <div className="min-h-screen flex items-center justify-center">
         <LoadingIndicator type="line-simple" size="sm" />
@@ -15,7 +14,7 @@ export default function ProtectedRoute({ children }) {
 
     if (!user) {
         // redirect if not logged in
-        router.push("/login");
+        redirect('/login')
         return null;
     }
 
