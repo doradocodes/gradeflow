@@ -36,9 +36,9 @@ export default function HomePage() {
 
             <main className="flex flex-col items-center min-h-screen bg-white">
                 {/* Hero */}
-                <section className="bg-gray-50 w-full py-24 px-6">
-                    <div className="grid grid-cols-2 items-center gap-8 max-w-7xl mx-auto">
-                        <div>
+                <section className="bg-gray-50 w-full py-24 px-6 max-sm:py-8">
+                    <div className="grid grid-cols-2 items-center gap-8 max-w-7xl mx-auto max-sm:grid-cols-1">
+                        <div className="max-sm:text-center">
                             <h1 className="text-5xl font-bold tracking-tight mb-8">
                                 An <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block ">educator</span>-first,<br/> <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block">AI</span> -powered grading tool.
                             </h1>
@@ -46,7 +46,7 @@ export default function HomePage() {
                                 See how Gradeflow helps you organize submissions, give meaningful feedback, and save hours of time.<br/><br/>
                                 <b>Your first assignment is completely free</b> — no credit card, no setup friction. Just create, teach, and flow.
                             </p>
-                            <div className="flex gap-4">
+                            <div className="flex gap-4 max-sm:justify-center">
                                 <Button
                                     href="/signup"
                                     color="primary"
