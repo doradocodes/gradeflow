@@ -1,5 +1,6 @@
 import RubricCard from "@/components/RubricCard";
 import clsx from "clsx";
+import {deleteRubric} from "@/utils/firestore";
 
 const COLORS = [
     'bg-emerald-100 text-emerald-800',
@@ -8,7 +9,7 @@ const COLORS = [
     'bg-sky-100 text-sky-800',
 ];
 
-export default function RubricCards({ rubric = [] }) {
+export default function RubricCards({ rubric, isEditable = false, onDelete = () => {} }) {
     return <>
         <div className={clsx(
             "grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] overflow-y-auto",
@@ -16,10 +17,12 @@ export default function RubricCards({ rubric = [] }) {
             {rubric?.map((r, index) =>
                 <RubricCard
                     key={index}
-                    category={r.categoryName}
+                    categoryName={r.categoryName}
                     points={r.maxPoints}
                     criteria={r.criteria}
                     color={COLORS[index % COLORS.length]}
+                    isEditable={isEditable}
+                    onDelete={() => onDelete(r.categoryName)}
                 ></RubricCard>)
             }
         </div>

@@ -50,7 +50,6 @@ export default function AssignmentsList({title, filters = {}}) {
 function AssignmentsTable({title, assignments, onLoadAssignments}) {
     const [openSubmissions, setOpenSubmissions] = useState(false);
     const [openRubric, setOpenRubric] = useState(false);
-    const [isAddingRubric, setIsAddingRubric] = useState(false);
     const [openNewAssignmentsForm, setOpenNewAssignmentsForm] = useState(false);
     const [openEditAssignmentsForm, setOpenEditAssignmentsForm] = useState(false);
 
@@ -77,21 +76,13 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
         onLoadAssignments();
     }
 
-    const onAddRubricCategory = async (values) => {
-        setRubric([
-            ...rubric,
-            values
-        ]);
-    }
-
     const onUpdateRubric = async (values) => {
         await onEditAssignment({
             id: currentAssignment.id,
-            rubric,
+            rubric: values,
         });
         setCurrentAssignment(null);
         setOpenRubric(false);
-        setIsAddingRubric(false);
         onLoadAssignments();
     }
 
@@ -124,7 +115,6 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
     }
 
     return (<div className="">
-
         <div>
             <TableCard.Root className="mb-8">
                 <TableCard.Header
@@ -286,23 +276,11 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     onClose={() => {
                         setCurrentAssignment(null);
                         setOpenRubric(false);
-                        setIsAddingRubric(false);
                     }}
                     title={`${currentAssignment?.title} Rubric`}
                     description="Grading rubric for this assignment."
                 >
-                    <div>
-                        {currentAssignment && <RubricCards rubric={currentAssignment.rubric} isGrid={false}/>}
-                        {isAddingRubric ?
-                            <div className="w-full border border-gray-300 rounded-lg mt-4">
-                                <RubricForm onSubmit={onAddRubricCategory}/>
-                            </div>
-                            :
-                            <Button className="mt-4" color="secondary" size="sm" onClick={() => setIsAddingRubric(true)}
-                                    iconLeading={Plus}>Add category</Button>
-                        }
-                    </div>
-                    <Button color={"primary"} className="mt-6" onClick={onUpdateRubric}>Update rubric</Button>
+                    <RubricForm onSubmit={onUpdateRubric} assignment={currentAssignment} />
                 </SlideoutMenu>
             </>
 
