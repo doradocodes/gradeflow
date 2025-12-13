@@ -208,7 +208,7 @@ function GradeCell({ item }) {
         </>
         }
         <Button
-            color="secondary"
+            color="primary"
             size="sm"
             target="_blank"
             iconTrailing={<ArrowRight size={12}/>}
