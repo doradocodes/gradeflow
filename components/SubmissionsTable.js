@@ -21,6 +21,7 @@ export default function SubmissionsTable({ assignment }) {
     const [submissions, setSubmissions] = useState([]);
     const [isAddingSubmission, setIsAddingSubmission] = useState(false);
     const [currentSubmission, setCurrentSubmission] = useState(null);
+    const [openFeedback, setOpenFeedback] = useState(false);
 
     useEffect(() => {
         loadSubmissions();
@@ -136,7 +137,10 @@ export default function SubmissionsTable({ assignment }) {
                                 </ol>
                             </Table.Cell>
                             <Table.Cell>
-                                <GradeCell item={item} />
+                                <GradeCell item={item} setOpenFeedback={async () => {
+                                    await setCurrentSubmission(item);
+                                    setOpenFeedback(true);
+                                }} />
                             </Table.Cell>
                             <Table.Cell>{item.notes || '-'}</Table.Cell>
                             <Table.Cell className="px-4">
@@ -175,12 +179,18 @@ export default function SubmissionsTable({ assignment }) {
                 />
             }
         </SlideoutMenu>
+        <SlideoutMenu
+            open={openFeedback}
+            onClose={() => setOpenFeedback(false)}
+            title={`Feedback for ${currentSubmission?.studentName}`}
+            isExpanded={true}
+        >
+            <FeedbackSummary submissionId={currentSubmission?.id} />
+        </SlideoutMenu>
     </>
 }
 
-function GradeCell({ item }) {
-    const [openFeedback, setOpenFeedback] = useState(false);
-
+function GradeCell({ item, setOpenFeedback }) {
     const getFinalPoints = (summary) => {
         return summary.reduce((acc, item) => {
             return acc + parseInt(item.estimated_points);
@@ -189,18 +199,10 @@ function GradeCell({ item }) {
 
     return <div className="flex gap-2 items-center">
         {item.feedback && <>
-            <SlideoutMenu
-                open={openFeedback}
-                onClose={() => setOpenFeedback(false)}
-                title={`Feedback for ${item.studentName}`}
-                isExpanded={true}
-            >
-                <FeedbackSummary submissionId={item.id} />
-            </SlideoutMenu>
             <Button
                 color="primary"
                 size="sm"
-                onClick={() => setOpenFeedback(true)}
+                onClick={setOpenFeedback}
                 iconTrailing={<CheckVerified01 size={16} />}
             >
                 {getFinalPoints(item.feedback.summary)}

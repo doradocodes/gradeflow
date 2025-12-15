@@ -19,8 +19,9 @@ export default function FeedbackSummary({ submissionId }) {
     };
 
     useEffect(() => {
+        if (!submissionId) return;
         load();
-    }, []);
+    }, [submissionId]);
 
     const onSubmit = async (data) => {
         await updateSubmission(submissionId, data);
