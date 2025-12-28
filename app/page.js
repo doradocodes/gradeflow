@@ -39,14 +39,14 @@ export default function HomePage() {
                 <section className="bg-gray-50 w-full py-24 px-6 max-sm:py-8">
                     <div className="grid grid-cols-2 items-center gap-8 max-w-7xl mx-auto max-sm:grid-cols-1">
                         <div className="max-sm:text-center">
-                            <h1 className="text-5xl font-bold tracking-tight mb-8">
-                                An <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block ">educator</span>-first,<br/> <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block">AI</span> -powered grading tool.
+                            <h1 className="text-5xl font-bold tracking-tight mb-8 ">
+                                An <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block ">educator</span>-first,<br/> <span className="select-none font-deco text-[var(--color-secondary-500)] transition-transform duration-300 ease-in-out hover:[transform:rotate(5deg)] inline-block">AI</span>-powered grading tool.
                             </h1>
                             <p className="text-lg text-gray-600 max-w-xl mb-8">
                                 See how Gradeflow helps you organize submissions, give meaningful feedback, and save hours of time.<br/><br/>
                                 <b>Your first assignment is completely free</b> — no credit card, no setup friction. Just create, teach, and flow.
                             </p>
-                            <div className="flex gap-4 max-sm:justify-center">
+                            <div className="flex gap-4 items-center max-sm:justify-center">
                                 <Button
                                     href="/signup"
                                     color="primary"
@@ -81,9 +81,11 @@ export default function HomePage() {
 
                 {/* Features */}
                 <section className="w-full py-20 min-h-96">
-                    <h2 className="text-5xl font-semibold mb-8 text-center">
-                        Features
-                    </h2>
+                    <div className={'flex items-center justify-center gap-2 mb-8 '}>
+                        <h2 className="text-5xl font-semibold text-center mb-6">Features</h2>
+                        <Image src={'/arrows/arrow-down-3.svg'} alt={'Arrow down'} width={70} height={30} className=""/>
+                    </div>
+
                     <div className="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 px-6">
                         <Feature
                             icon={<Microphone01 data-icon className="inline-block align-sub mr-1"/>}
@@ -105,9 +107,10 @@ export default function HomePage() {
 
                 {/* How it works */}
                 <section className="bg-gray-50 w-full py-20 px-6 text-left">
-                    <h2 className="text-5xl font-semibold mb-8 text-center">
-                        How it works
-                    </h2>
+                    <div className={'flex items-center justify-center gap-2 mb-6'}>
+                        <h2 className="text-5xl font-semibold mb-10 text-center">How it works</h2>
+                        <Image src={'/arrows/arrow-down-4.svg'} alt={'Arrow down'} width={60} height={30} className=""/>
+                    </div>
                     <ol className="space-y-8 font-medium max-w-2xl mx-auto">
                         <Step index={1} description="Teachers create an assignment and share a link with students." />
                         <Step index={2} description="Students submit their assignments and teachers can provide feedback via voice or text." />
@@ -116,10 +119,11 @@ export default function HomePage() {
                 </section>
 
                 {/* CTA */}
-                <section className="py-20 w-full text-center min-h-96 flex flex-col justify-center items-center gap-8">
-                    <h2 className="text-5xl font-bold">
+                <section className="py-20 w-full text-center min-h-96 flex flex-col justify-center items-center gap-4">
+                    <h2 className="text-5xl font-bold mb-4">
                         Start grading with Gradeflow today.
                     </h2>
+                    <Image src={'/arrows/arrow-down-5.svg'} alt={'Arrow down'} width={40} height={30} className=""/>
                     <Button
                         href="/signup"
                         color="primary"
@@ -136,14 +140,14 @@ export default function HomePage() {
 function Feature({ icon, title, description }) {
     return (
         <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-xl transition min-h-52 flex flex-col justify-center gap-4">
-            <h3 className="text-xl font-semibold">{icon} {title}</h3>
-            <p className="text-gray-600 text-lg">{description}</p>
+            <h3 className="text-lg text-gray-600 font-bold">{icon} {title}</h3>
+            <p className="text-lg text-gray-600">{description}</p>
         </div>
     );
 }
 
 function Step({ index, description}){
     return <li className="flex gap-4 text-lg text-gray-600">
-        <span className="font-deco text-4xl">{index}.</span> {description}
+        <span className="font-deco text-4xl text-black">{index}.</span> {description}
     </li>
 }

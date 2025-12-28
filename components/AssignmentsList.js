@@ -22,6 +22,7 @@ import RubricForm from "@/components/forms/RubricForm";
 import Modal from "@/components/Modal";
 import AssignmentsForm from "@/components/forms/AssignmentsForm";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
+import Image from "next/image";
 
 export default function AssignmentsList({title, filters = {}}) {
     const {user, loading} = useAuth();
@@ -114,9 +115,22 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
         return data.length;
     }
 
-    return (<div className="">
+    return (<div>
         <div>
-            <TableCard.Root className="mb-8">
+            {assignments.length < 1 ?
+                <div className="min-h-[50vh] flex flex-col items-center justify-center w-full ring-1 ring-gray-300 rounded-xl">
+                    <p className="text-lg text-gray-600 text-center">You have no assignments yet. <br/>Create your first assignment here.</p>
+                    <Image src={'/arrows/arrow-down-2.svg'} alt={'Arrow down'} width={30} height={30} className="mt-2"/>
+                    <Button
+                        color="primary" size="md" iconLeading={<PlusCircle data-icon/>}
+                        className="mt-4 mb-4"
+                        onClick={() => setOpenNewAssignmentsForm(true)}
+                    >
+                        Add assignment
+                    </Button>
+                </div>
+                :
+                <TableCard.Root className="mb-8">
                 <TableCard.Header
                     title={title}
                     contentTrailing={
@@ -216,20 +230,21 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
 
                 {/*<PaginationPageMinimalCenter page={1} total={10} className="px-4 py-3 md:px-6 md:pt-3 md:pb-4"/>*/}
             </TableCard.Root>
-            <SlideoutMenu
-                open={openNewAssignmentsForm}
-                onClose={() => setOpenNewAssignmentsForm(false)}
-                title={`Create a new assignment`}
-                description="Fill in the details to create a new assignment."
-            >
-                {openNewAssignmentsForm &&
-                    <AssignmentsForm
-                        onSubmit={onCreateAssignment}
-                        onClose={() => setOpenNewAssignmentsForm(false)}/>
-                }
-            </SlideoutMenu>
-
+            }
             <>
+                <SlideoutMenu
+                    open={openNewAssignmentsForm}
+                    onClose={() => setOpenNewAssignmentsForm(false)}
+                    title={`Create a new assignment`}
+                    description="Fill in the details to create a new assignment."
+                >
+                    {openNewAssignmentsForm &&
+                        <AssignmentsForm
+                            onSubmit={onCreateAssignment}
+                            onClose={() => setOpenNewAssignmentsForm(false)}/>
+                    }
+                </SlideoutMenu>
+
                 {/*Edit assignment form*/}
                 <SlideoutMenu
                     open={openEditAssignmentsForm}
