@@ -24,7 +24,7 @@ export default function SlideoutMenu({open, onClose, title, description, childre
         <div
             className={clsx(
                 "fixed inset-0 overflow-hidden transition-all duration-300",
-                open ? 'z-50' : 'z-[-1]'
+                open ? 'z-100' : 'z-[-10]'
             )}
         >
             <div
