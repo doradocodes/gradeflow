@@ -3,10 +3,11 @@
 import type { HTMLAttributes } from "react";
 import { cx } from "@/utils/cx";
 import {GradeflowLogoMinimal} from "@/components/foundations/logo/gradeflow-logo-minimal";
+import {Badge} from "@/components/base/badges/badges";
 
 export const GradeflowLogo = (props: HTMLAttributes<HTMLOrSVGElement>) => {
     return (
-        <div {...props} className={cx("flex h-8 w-max items-center justify-start overflow-visible", props.className)}>
+        <div {...props} className={cx("flex gap-2 h-8 w-max items-center justify-start overflow-visible", props.className)}>
             {/* Minimal logo */}
             {/*<GradeflowLogoMinimal className="aspect-square h-full w-auto shrink-0" />*/}
 
@@ -28,6 +29,8 @@ export const GradeflowLogo = (props: HTMLAttributes<HTMLOrSVGElement>) => {
                     </clipPath>
                 </defs>
             </svg>
+
+            <Badge type="pill-color" color="brand" className={'font-bold text-gray-700'}>BETA</Badge>
 
         </div>
     );
