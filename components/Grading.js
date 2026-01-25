@@ -29,7 +29,7 @@ export default function Grading({ submissionId }) {
 
     if (!submission) return <LoadingIndicator type="line-simple" size="sm" />
 
-    return <div className="w-full h-full flex flex-col gap-4 justify-center items-center overflow-hidden">
+    return <div className="absolute top-0 left-0 -z-1 w-full h-full flex flex-col gap-4 justify-center items-center overflow-hidden pt-[72px]">
         {currentFile && <IframeCanvas url={currentFile.value} />}
         <GradingRubric
             assignmentId={submission.assignmentId}

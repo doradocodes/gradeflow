@@ -1,6 +1,6 @@
 'use client'
 
-import {useEffect, useState} from "react";
+import {useEffect, useState, useRef, useMemo, useCallback} from "react";
 import Recorder from "@/components/Recorder";
 import RubricCards from "@/components/RubricCards";
 import {getAssignment, updateSubmission} from "@/utils/firestore";
@@ -15,6 +15,20 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
     const [collapsed, setCollapsed] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState(null);
+    const recorderMountedRef = useRef(false);
+    const assignmentRef = useRef(null);
+
+    // Keep assignment ref in sync
+    useEffect(() => {
+        assignmentRef.current = assignment;
+    }, [assignment]);
+
+    // Track when recorder is first mounted
+    useEffect(() => {
+        if (!isTranscribing && assignment) {
+            recorderMountedRef.current = true;
+        }
+    }, [isTranscribing, assignment]);
 
     useEffect(() => {
         async function load() {
@@ -32,37 +46,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         return arr.join('\n');
     }
 
-    const submitFeedback = async (audioUrl, audioFile) => {
-        setIsTranscribing(true);
-        let url = audioUrl;
-        if (audioFile) {
-            const cloudinaryURL =
-                "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
-            const formData = new FormData();
-            formData.append("file", audioFile);
-            formData.append("upload_preset", "gradeflow");
-
-            // Upload the audio file to Cloudinary
-            try {
-                const response = await fetch(cloudinaryURL, {
-                    method: "POST",
-                    body: formData,
-                });
-                const data = await response.json();
-                url = data.secure_url;
-            } catch (error) {
-                console.error("Error uploading audio file:", error);
-                setIsTranscribing(false);
-                setError(error);
-                return;
-            }
-        }
-
-        const rubricString = getRubricString(assignment?.rubric);
-        await handleTranscribe(url, rubricString);
-    };
-
-    const handleTranscribe = async (audioUrl, rubric) => {
+    const handleTranscribe = useCallback(async (audioUrl, rubric) => {
         try {
             // Summarize the audio using the API
             const res = await fetch("/api/summarize", {
@@ -93,13 +77,48 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
             setError(error);
         }
         setIsTranscribing(false);
-    };
+    }, [submission.id, onOpenSummary]);
+
+    const submitFeedback = useCallback(async (audioUrl, audioFile) => {
+        setIsTranscribing(true);
+        let url = audioUrl;
+        if (audioFile) {
+            const cloudinaryURL =
+                "https://api.cloudinary.com/v1_1/dkg091hsa/video/upload";
+            const formData = new FormData();
+            formData.append("file", audioFile);
+            formData.append("upload_preset", "gradeflow");
+
+            // Upload the audio file to Cloudinary
+            try {
+                const response = await fetch(cloudinaryURL, {
+                    method: "POST",
+                    body: formData,
+                });
+                const data = await response.json();
+                url = data.secure_url;
+            } catch (error) {
+                console.error("Error uploading audio file:", error);
+                setIsTranscribing(false);
+                setError(error);
+                return;
+            }
+        }
+
+        const rubricString = getRubricString(assignmentRef.current?.rubric);
+        await handleTranscribe(url, rubricString);
+    }, [handleTranscribe]);
+
+    // Memoize the Recorder component to prevent re-renders when collapsed changes
+    const recorderElement = useMemo(() => (
+        <Recorder onEndRecording={submitFeedback} />
+    ), [submitFeedback]);
 
     if (!assignment) return null;
 
     return <div className={clsx([
         "flex flex-col fixed z-20 top-20 right-2 shadow-md rounded-lg bg-white max-w-lg transition-all duration-300",
-        collapsed ? "h-16 overflow-hidden" : "h-auto"
+        collapsed ? "max-h-16 overflow-hidden" : "max-h-[800px]"
     ])}>
         <div className="p-4 border-b border-gray-200 ">
             <div className="flex gap-1 justify-between items-center">
@@ -110,36 +129,38 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 }
             </div>
         </div>
-        <div className="p-4 flex gap-2 items-center justify-between">
-            <h3 className="font-bold text-gray-500">Viewing file</h3>
-            <Dropdown.Root>
-                <Button
-                    className="group"
-                    color="secondary"
-                    iconTrailing={ChevronDown}
-                >
-                    {currentFile?.name || 'Select a file'}
-                </Button>
+        <div className={clsx("transition-opacity duration-300", collapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
+            <div className="p-4 flex gap-2 items-center justify-between">
+                <h3 className="font-bold text-gray-500">Viewing file</h3>
+                <Dropdown.Root>
+                    <Button
+                        className="group"
+                        color="secondary"
+                        iconTrailing={ChevronDown}
+                    >
+                        {currentFile?.name || 'Select a file'}
+                    </Button>
 
-                <Dropdown.Popover>
-                    <Dropdown.Menu>
-                        {submission?.deliverables.map((d, index) => (
-                            <Dropdown.Item
-                                key={d.name}
-                                onClick={() => setCurrentFile(d)}
-                                icon={d.name === currentFile?.name ? Check : null}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm">{d.name}</span>
-                                </div>
-                            </Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
-                </Dropdown.Popover>
-            </Dropdown.Root>
-        </div>
-        <div className="px-4 max-h-96 overflow-y-auto">
-            <RubricCards rubric={assignment.rubric} />
+                    <Dropdown.Popover>
+                        <Dropdown.Menu>
+                            {submission?.deliverables.map((d, index) => (
+                                <Dropdown.Item
+                                    key={d.name}
+                                    onClick={() => setCurrentFile(d)}
+                                    icon={d.name === currentFile?.name ? Check : null}
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm">{d.name}</span>
+                                    </div>
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown.Popover>
+                </Dropdown.Root>
+            </div>
+            <div className="px-4 max-h-96 overflow-y-auto">
+                <RubricCards rubric={assignment.rubric} />
+            </div>
         </div>
         <div className="p-4">
             {isTranscribing ?
@@ -147,7 +168,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                     <LoadingIndicator type="line-simple" size="sm" /> Transcribing...
                 </div>
                 :
-                <Recorder onEndRecording={submitFeedback} />
+                recorderElement
             }
             {error &&
                 <div className="mt-2 text-sm text-red-500 text-center">
