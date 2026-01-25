@@ -185,7 +185,7 @@ export default function SubmissionsTable({ assignment }) {
             title={`Feedback for ${currentSubmission?.studentName}`}
             isExpanded={true}
         >
-            <FeedbackSummary submissionId={currentSubmission?.id} />
+            <FeedbackSummary submissionId={currentSubmission?.id} assignment={assignment} />
         </SlideoutMenu>
     </>
 }

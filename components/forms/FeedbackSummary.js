@@ -6,7 +6,7 @@ import {TextArea} from "@/components/base/textarea/textarea";
 import {Input} from "@/components/base/input/input";
 import {getSubmission, updateSubmission} from "@/utils/firestore";
 
-export default function FeedbackSummary({ submissionId }) {
+export default function FeedbackSummary({ submissionId, assignment }) {
     const [openTranscript, setOpenTranscript] = useState(false);
     const [feedback, setFeedback] = useState({});
     const [studentName, setStudentName] = useState('');
@@ -66,7 +66,7 @@ export default function FeedbackSummary({ submissionId }) {
                 emailText += `${item.category} (${item.estimated_points}${item.max_points ? `/${item.max_points}` : ''} points)\n\n`;
                 emailText += `${item.summary}\n\n`;
             });
-            emailText += `Final Score: ${getFinalPoints(summary)} points\n`;
+            emailText += `${assignment.title} Final Score: ${getFinalPoints(summary)} points\n`;
             return emailText;
         }
         // copy to clipboard

@@ -44,7 +44,7 @@ export default function Grading({ submissionId }) {
             onClose={() => setIsSummaryOpen(false)}
             title="Feedback summary"
         >
-            {isSummaryOpen && <FeedbackSummary submissionId={submission.id} /> }
+            {isSummaryOpen && <FeedbackSummary submissionId={submission.id} assignment={{}} /> }
         </Modal>
     </div>
 }
