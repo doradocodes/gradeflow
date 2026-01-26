@@ -1,4 +1,3 @@
-import {getSubmissions} from "@/utils/firestore";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Grading from "@/components/Grading";
 

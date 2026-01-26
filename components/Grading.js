@@ -27,6 +27,22 @@ export default function Grading({ submissionId }) {
         load();
     }, []);
 
+    // Show confirmation dialog when user tries to leave the page
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            e.preventDefault();
+            // Modern browsers require returnValue to be set
+            e.returnValue = '';
+            return '';
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
     if (!submission) return <LoadingIndicator type="line-simple" size="sm" />
 
     return <div className="absolute top-0 left-0 -z-1 w-full h-full flex flex-col gap-4 justify-center items-center overflow-hidden pt-[72px]">
