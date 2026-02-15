@@ -1,7 +1,8 @@
 import {DM_Sans} from "next/font/google";
 import "./globals.css";
 import {AuthProvider} from "@/components/AuthProvider";
-import {Analytics} from "@vercel/analytics/vue";
+import { Analytics } from '@vercel/analytics/next';
+
 
 const dmSans = DM_Sans({
     variable: "--font-dm-sans",
