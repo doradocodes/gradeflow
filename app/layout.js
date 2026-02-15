@@ -1,6 +1,7 @@
 import {DM_Sans} from "next/font/google";
 import "./globals.css";
 import {AuthProvider} from "@/components/AuthProvider";
+import {Analytics} from "@vercel/analytics/vue";
 
 const dmSans = DM_Sans({
     variable: "--font-dm-sans",
@@ -21,6 +22,7 @@ export default function RootLayout({children}) {
         <AuthProvider>
             {children}
         </AuthProvider>
+        <Analytics />
         </body>
         </html>
     );

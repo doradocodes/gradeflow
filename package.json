@@ -8,9 +8,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.975.0",
     "@supabase/ssr": "^0.7.0",
     "@untitledui/file-icons": "^0.0.9",
     "@untitledui/icons": "^0.0.19",
+    "@vercel/analytics": "^1.6.1",
     "assemblyai": "^4.16.1",
     "clsx": "^2.1.1",
     "firebase": "^12.3.0",
