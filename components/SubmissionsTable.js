@@ -32,7 +32,7 @@ export default function SubmissionsTable({ assignment }) {
         setSubmissions(data);
     }
 
-    const onCreateAssignment = async (values) => {
+    const onCreateSubmission = async (values) => {
         const data = {
             ...values,
             assignmentId: assignment.id,
@@ -40,7 +40,7 @@ export default function SubmissionsTable({ assignment }) {
         };
         // If the submission is being edited, update the existing submission
         if (currentSubmission) {
-            await onEditAssignment(currentSubmission.id, data);
+            await onEditSubmission(currentSubmission.id, data);
         } else {
             await createSubmission(data);
         }
@@ -49,7 +49,7 @@ export default function SubmissionsTable({ assignment }) {
         setIsAddingSubmission(false);
     }
 
-    const onEditAssignment = async (submissionId, values) => {
+    const onEditSubmission = async (submissionId, values) => {
         await updateSubmission(submissionId, values);
         await loadSubmissions();
         setIsAddingSubmission(false);
@@ -173,7 +173,7 @@ export default function SubmissionsTable({ assignment }) {
                     assignmentId={assignment.id}
                     isInline={true}
                     deliverables={assignment.deliverables}
-                    onSubmit={onCreateAssignment}
+                    onSubmit={onCreateSubmission}
                     defaultValues={currentSubmission}
                     isExpanded={true}
                 />
