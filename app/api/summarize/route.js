@@ -63,24 +63,48 @@ export async function POST(req) {
     ]}
     ` : 'Create a summary of the following transcript:';
 
-    // Step 3: Apply LeMUR.
-    let lemurResult;
+    // Step 3: Send transcript to LLM Gateway.
+    let llmResponse;
     try {
-        lemurResult = await client.lemur.summary({
-            transcript_ids: [transcript.id],
-            final_model: "anthropic/claude-sonnet-4-20250514",
-            context: prompt,
-            answer_format: "json",
+        const res = await fetch("https://llm-gateway.assemblyai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": process.env.ASSEMBLYAI_API_KEY,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "claude-sonnet-4-20250514",
+                messages: [
+                    {
+                        role: "user",
+                        content: `${prompt}\n\n${transcript.text}`,
+                    },
+                ],
+                max_tokens: 2000,
+            }),
         });
+
+        if (!res.ok) {
+            const errBody = await res.text();
+            throw new Error(`LLM Gateway returned ${res.status}: ${errBody}`);
+        }
+
+        llmResponse = await res.json();
     } catch (err) {
-        console.error("LEMUR summarization failed:", err);
-        return new Response(JSON.stringify({ error: "Summarization failed" }), { status: 502, headers: jsonHeaders });
+        console.error("LLM Gateway summarization failed:", err);
+        return new Response(JSON.stringify({
+            error: "Summarization failed",
+            details: err.message,
+        }), { status: 502, headers: jsonHeaders });
     }
 
-    const responseText = lemurResult?.response;
+    const responseText = llmResponse?.choices?.[0]?.message?.content;
     if (!responseText) {
-        console.error("Empty LEMUR response:", lemurResult);
-        return new Response(JSON.stringify({ error: "Empty summarization response" }), { status: 502, headers: jsonHeaders });
+        console.error("Empty LLM Gateway response:", llmResponse);
+        return new Response(JSON.stringify({
+            error: "Empty summarization response",
+            details: llmResponse
+        }), { status: 502, headers: jsonHeaders });
     }
 
     const formattedResponse = responseText.replace('```json', '').replace('```', '').trim();
