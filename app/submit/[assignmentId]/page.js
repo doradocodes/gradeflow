@@ -13,10 +13,14 @@ export default async function SubmitAssignmentPage({params}) {
         return <div>Assignment not found</div>;
     }
 
-    return <div className="w-full max-w-4xl mx-auto h-screen p-4 flex flex-col gap-4 justify-center items-center">
-        <GradeflowLogo className="mb-4" />
-        <h1 className="text-center font-bold text-5xl">Submission to {assignment.courseName} - {assignment.title}</h1>
-        <p className="mb-8">{assignment.description}</p>
-        <StudentSubmissionForm assignment={JSON.parse(JSON.stringify(assignment))}/>
+    return <div className="pt-14 md:pt-24 px-10 pb-24">
+        <div className="flex flex-col align-center max-w-xl mx-auto">
+            <div className="flex justify-center">
+                <GradeflowLogo className="mb-4" />
+            </div>
+            <h1 className="text-center font-bold text-2xl md:text-5xl mb-4">Submission to {assignment.courseName} - {assignment.title}</h1>
+            <p className="mb-8 text-center">{assignment.description}</p>
+            <StudentSubmissionForm assignment={JSON.parse(JSON.stringify(assignment))}/>
+        </div>
     </div>
 }
