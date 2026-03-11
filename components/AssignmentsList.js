@@ -56,6 +56,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
 
     const [currentAssignment, setCurrentAssignment] = useState(null);
     const [deleteAssignmentId, setDeleteAssignmentId] = useState(null);
+    const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
 
     const [sortDescriptor, setSortDescriptor] = useState({
         column: "status",
@@ -149,7 +150,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     <Table.Header>
                         <Table.Head id="courseName" label="Course name" isRowHeader allowsSorting={false}/>
                         <Table.Head id="title" label="Title" allowsSorting={false}/>
-                        <Table.Head id="description" label="Description" allowsSorting={false} tooltip="This is a tooltip"/>
+                        <Table.Head id="description" label="Description" allowsSorting={false}/>
                         <Table.Head id="dueDate" label="Due date" allowsSorting={false}/>
                         <Table.Head id="submissionLink" label="Submission Link"/>
                         <Table.Head id="submissions" label="Submissions"/>
@@ -161,14 +162,22 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                     <Table.Body items={assignments}>
                         {(item) => (
                             <Table.Row id={item.id}>
-                                <Table.Cell>{item.courseName}</Table.Cell>
-                                <Table.Cell>{item.title}</Table.Cell>
-                                <Table.Cell>{item.description}</Table.Cell>
-                                <Table.Cell>{new Date(item.dueDate).toLocaleString(undefined, {
+                                <Table.Cell className="whitespace-nowrap">{item.courseName}</Table.Cell>
+                                <Table.Cell>
+                                    <div className="whitespace-nowrap">{item.title}</div>
+                                </Table.Cell>
+                                <Table.Cell>
+                                    <ExpandableDescription
+                                        description={item.description}
+                                    />
+                                </Table.Cell>
+                                <Table.Cell className="whitespace-nowrap">
+                                    { new Date(item.dueDate).toLocaleString(undefined, {
                                     year: "numeric",
                                     month: "short",
                                     day: "numeric"
-                                })}</Table.Cell>
+                                    })}
+                                </Table.Cell>
                                 <Table.Cell>
                                     <Link href={`/submit/${item.id}`} target="_blank" rel="noopener noreferrer">
                                         <Button color="primary" size="sm" className=""
@@ -201,7 +210,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                     >See rubric</Button>
                                 </Table.Cell>
                                 <Table.Cell className="whitespace-nowrap">
-                                    <ul className="list-decimal">
+                                    <ul className="list-decimal flex flex-col gap-1">
                                         {item.deliverables?.map((deliverable) => (
                                             <li key={deliverable.name} className=" list-inside flex gap-2">
                                                 <span className="inline-block">{deliverable.name}</span> <Badge
@@ -316,4 +325,16 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
             </Modal>
         </div>
     </div>);
+}
+
+function ExpandableDescription({description}) {
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const onToggle = () => {
+        setIsExpanded((prev) => !prev);
+    }
+
+    return <div className="w-[300px] cursor-pointer">
+        <p onClick={onToggle} className={`text-sm ${isExpanded ? "" : "line-clamp-3"}`}>{description}</p>
+    </div>
 }
