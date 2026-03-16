@@ -125,7 +125,7 @@ export const HeaderNavigationBase = ({
                         (!hideBorder || showSecondaryNav) && "border-b border-secondary",
                     )}
                 >
-                    <div className="flex w-full max-w-container justify-between pr-3 pl-4 md:px-8">
+                    <div className="flex w-full max-w-container justify-between px-4 md:px-8">
                         <div className="flex flex-1 items-center gap-4">
                             <a
                                 aria-label="Go to homepage"
