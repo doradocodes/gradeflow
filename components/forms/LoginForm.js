@@ -13,7 +13,7 @@ export default function LoginForm() {
     const [user, setUser] = useState(null);
     const formRef = useRef(null);
     const [error, setError] = useState(null);
-    const [isLoginWithPassword, setIsLoginWithPassword] = useState(true);
+    const [isLoginWithPassword, setIsLoginWithPassword] = useState(true); // TODO: complete sign in with email flow
 
     // Listen for changes
     useEffect(() => {
@@ -86,7 +86,7 @@ export default function LoginForm() {
                         {/*<div>*/}
                         {/*    <Checkbox label="Remember me" size="sm" />*/}
                         {/*</div>*/}
-                        <Link className="text-brand-primary text-sm" href="#">Forgot password?</Link>
+                        <Link className="text-brand-primary text-sm" href="/forgot-password">Forgot password?</Link>
                     </div>
                     <Button className="mt-4" color="primary" size="lg" type="submit">Login</Button>
                     {error && <p className="text-red-500 text-sm text-center">{error}</p>}

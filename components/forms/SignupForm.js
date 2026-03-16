@@ -1,7 +1,7 @@
 "use client";
 
 import {auth} from "@/utils/firebase";
-import {createUserWithEmailAndPassword, updateProfile, signOut, validatePassword, getAuth} from "firebase/auth";
+import {createUserWithEmailAndPassword, updateProfile, signOut, validatePassword, getAuth, sendEmailVerification} from "firebase/auth";
 import {useEffect, useRef, useState} from "react";
 import {Input} from "@/components/base/input/input";
 import {Button} from "@/components/base/buttons/button";
@@ -57,7 +57,9 @@ export default function SignupForm() {
                 email,
             })
 
-            window.location.href = "/assignments";
+            // Send email verification
+            await sendEmailVerification(result.user);
+            redirect('/verify-email');
         } catch (err) {
             console.error("Auth error:", err);
             if (err.message.includes("auth/email-already-in-use")) {
@@ -73,6 +75,9 @@ export default function SignupForm() {
     }
 
     if (user) {
+        if (!user.emailVerified) {
+            redirect('/verify-email');
+        }
         redirect('/assignments');
     }
 

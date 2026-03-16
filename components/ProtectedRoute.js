@@ -18,6 +18,12 @@ export default function ProtectedRoute({ children }) {
         return null;
     }
 
+    if (!user.emailVerified) {
+        // redirect if email not verified
+        redirect('/verify-email')
+        return null;
+    }
+
     return <div className="">
         <HeaderNavigationBase
             user={user}
