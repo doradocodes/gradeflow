@@ -3,6 +3,7 @@
 import {HeaderNavigationBase} from "@/components/application/app-navigation/header-navigation";
 import {Button} from "@/components/base/buttons/button";
 import {Bell01, LayoutGrid01, Microphone01} from "@untitledui/icons";
+import Footer from "@/components/Footer";
 import gsap from "gsap";
 import Image from "next/image";
 import {useEffect, useRef} from "react";
@@ -31,7 +32,9 @@ export default function HomePage() {
     return (
         <div>
             <HeaderNavigationBase
-                items={[]}
+                items={[
+                    { label: "Pricing", href: "/pricing" },
+                ]}
             />
 
             <main className="flex flex-col items-center min-h-screen bg-white">
@@ -133,6 +136,7 @@ export default function HomePage() {
                     </Button>
                 </section>
             </main>
+            <Footer />
         </div>
     );
 }
