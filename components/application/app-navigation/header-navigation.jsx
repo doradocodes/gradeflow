@@ -19,6 +19,7 @@ import {db} from "@/utils/firebase";
 import {Tooltip, TooltipTrigger} from "@/components/base/tooltip/tooltip";
 import {signOut} from "firebase/auth";
 import {auth} from "@/utils/firebase";
+import {Button} from "@/components/base/buttons/button";
 
 export const HeaderNavigationBase = ({
                                          user,
@@ -106,6 +107,12 @@ export const HeaderNavigationBase = ({
                                     </div>
                                 </NavItemBase>
                             </>}
+                            {!user && (
+                                <div className="flex flex-col gap-2 px-2">
+                                    <Button href="/login" color="tertiary" size="sm">Log in</Button>
+                                    <Button href="/signup" color="primary" size="sm">Sign up</Button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </aside>
@@ -142,7 +149,7 @@ export const HeaderNavigationBase = ({
                             </nav>
                         </div>
 
-                        { user &&
+                        { user ? (
                             <div className="flex items-center gap-1">
                                 {trailingContent}
 
@@ -220,7 +227,12 @@ export const HeaderNavigationBase = ({
                                     </DialogTrigger>
                                 )}
                             </div>
-                        }
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Button href="/login" color="tertiary" size="sm">Log in</Button>
+                                <Button href="/signup" color="primary" size="sm">Sign up</Button>
+                            </div>
+                        )}
                     </div>
                 </section>
             </header>
