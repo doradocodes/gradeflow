@@ -128,7 +128,7 @@ export default function Recorder({ onEndRecording }) {
         <div className="flex flex-col gap-4">
             {status === "idle" && !audioURL && (
                 <>
-                    <Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />
+                    {/*<Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />*/}
                     <Button
                         size="lg"
                         className="w-full"

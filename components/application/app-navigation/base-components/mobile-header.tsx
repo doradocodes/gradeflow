@@ -15,7 +15,7 @@ import {GradeflowLogo} from "@/components/foundations/logo/gradeflow-logo";
 export const MobileNavigationHeader = ({ children }: PropsWithChildren) => {
     return (
         <AriaDialogTrigger>
-            <header className="flex h-16 items-center justify-between border-b border-secondary bg-primary py-3 pr-2 pl-4 lg:hidden">
+            <header className="flex h-16 items-center justify-between border-b border-secondary bg-primary py-3 px-4 lg:hidden">
                 <GradeflowLogo className="h-8" />
 
                 <AriaButton

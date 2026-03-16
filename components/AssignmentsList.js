@@ -140,7 +140,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                 color="primary" size="sm" iconLeading={<PlusCircle data-icon/>}
                                 onClick={() => setOpenNewAssignmentsForm(true)}
                             >
-                                Add assignment
+                                Add
                             </Button>
                         </div>
                     }

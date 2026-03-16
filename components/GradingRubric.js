@@ -5,7 +5,15 @@ import Recorder from "@/components/Recorder";
 import RubricCards from "@/components/RubricCards";
 import {getAssignment, updateSubmission} from "@/utils/firestore";
 import {Button} from "@/components/base/buttons/button";
-import {AlertTriangle, Check, ChevronDown, ChevronUp, HelpCircle, MagicWand02} from "@untitledui/icons";
+import {
+    AlertTriangle,
+    Check,
+    CheckCircleBroken,
+    ChevronDown,
+    ChevronUp,
+    HelpCircle,
+    MagicWand02
+} from "@untitledui/icons";
 import clsx from "clsx";
 import {Dropdown} from "@/components/base/dropdown/dropdown";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
@@ -166,9 +174,9 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         </div>
         <div className="p-4">
             {isTranscribing ?
-                <div className="text-center flex items-center justify-center gap-2">
-                    <LoadingIndicator type="line-simple" size="sm" /> Transcribing...
-                </div>
+                <Button size="lg" isDisabled={true} className="w-full cursor-pointer" iconLeading={<LoadingIndicator type="line-simple" size="sm" />} aria-label="Transcribing">
+                    Transcribing...
+                </Button>
                 :
                 recorderElement
             }

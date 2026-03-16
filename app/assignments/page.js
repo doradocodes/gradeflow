@@ -31,7 +31,7 @@ export default function AssignmentsPage() {
     }
 
     return <ProtectedRoute>
-        <div className="w-full max-w-container py-8 md:px-8 mx-auto z-10">
+        <div className="w-full max-w-container px-4 py-8 md:px-8 mx-auto z-10">
             <h1 className="text-2xl font-bold mb-2">Assignments</h1>
             <p className="mb-4 text-gray-500">View all your assignments.</p>
             <div className="mb-4 flex items-center justify-between">
