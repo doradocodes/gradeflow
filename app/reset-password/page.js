@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { auth } from "@/utils/firebase";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
@@ -9,7 +9,7 @@ import { Button } from "@/components/base/buttons/button";
 import { GradeflowLogo } from "@/components/foundations/logo/gradeflow-logo";
 import Link from "next/link";
 
-export default function ResetPassword() {
+function ResetPasswordContent() {
     const searchParams = useSearchParams();
     const oobCode = searchParams.get("oobCode");
 
@@ -167,3 +167,14 @@ export default function ResetPassword() {
     );
 }
 
+export default function ResetPassword() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-screen bg-gray-100">
+                <p className="text-gray-500">Loading...</p>
+            </div>
+        }>
+            <ResetPasswordContent />
+        </Suspense>
+    );
+}
