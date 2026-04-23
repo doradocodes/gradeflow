@@ -210,14 +210,14 @@ function GradeCell({ item, setOpenFeedback }) {
         </>
         }
         <Button
-            color="primary"
+            color={item.feedback ? "tertiary" : "primary"}
             size="sm"
             target="_blank"
             iconTrailing={<ArrowRight size={12}/>}
             href={`/submissions/${item.id}`}
             as={Link}
         >
-            Grade
+            Grade {item.feedback && 'again'}
         </Button>
     </div>
 }

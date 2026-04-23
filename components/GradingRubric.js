@@ -17,14 +17,16 @@ import {
 import clsx from "clsx";
 import {Dropdown} from "@/components/base/dropdown/dropdown";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
+import {useAudioCache} from "@/hooks/useAudioCache";
 
-export default function GradingRubric({ submission, assignmentId, studentName, currentFile, setCurrentFile, onOpenSummary }) {
+export default function GradingRubric({ submission, assignmentId, studentName, currentFile, setCurrentFile, onOpenSummary, onAudioCaptured, recorderRef }) {
     const [assignment, setAssignment] = useState(null);
     const [collapsed, setCollapsed] = useState(false);
     const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState(null);
     const recorderMountedRef = useRef(false);
     const assignmentRef = useRef(null);
+    const { deleteFromCache } = useAudioCache();
 
     // Keep assignment ref in sync
     useEffect(() => {
@@ -107,6 +109,9 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
 
                 const data = await response.json();
                 url = data.url;
+
+                // Upload succeeded — clear the cached recording
+                await deleteFromCache(submission.id);
             } catch (error) {
                 console.error("Error uploading audio file:", error);
                 setIsTranscribing(false);
@@ -121,13 +126,13 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
 
     // Memoize the Recorder component to prevent re-renders when collapsed changes
     const recorderElement = useMemo(() => (
-        <Recorder onEndRecording={submitFeedback} assignmentId={assignmentId} />
-    ), [submitFeedback, assignmentId]);
+        <Recorder ref={recorderRef} onEndRecording={submitFeedback} onAudioCaptured={onAudioCaptured} assignmentId={assignmentId} submissionId={submission.id} />
+    ), [submitFeedback, assignmentId, submission.id, onAudioCaptured, recorderRef]);
 
     if (!assignment) return null;
 
     return <div className={clsx([
-        "flex flex-col fixed z-20 top-20 right-2 shadow-md rounded-lg bg-white max-w-lg transition-all duration-300",
+        "flex flex-col fixed z-20 top-20 right-2 shadow-md rounded-lg bg-white max-w-lg transition-all duration-300 w-1/3 min-w-[400px]",
         collapsed ? "max-h-16 overflow-hidden" : "max-h-[800px]"
     ])}>
         <div className="p-4 border-b border-gray-200 ">
@@ -187,7 +192,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 </div>
             }
             {!!submission.feedback &&
-                <Button color="tertiary" className="w-full color-gray-500 mt-2" onClick={() => onOpenSummary(true)}>View summary</Button>
+                <Button color="tertiary" className="w-full color-gray-500 mt-2" onClick={() => onOpenSummary(true)}>View completed summary</Button>
             }
         </div>
 

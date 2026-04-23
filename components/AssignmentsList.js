@@ -17,14 +17,13 @@ import Link from "next/link";
 import SlideoutMenu from "@/components/SlideoutMenu";
 import SubmissionsTable from "@/components/SubmissionsTable";
 import {Badge} from "@/components/base/badges/badges";
-import RubricCards from "@/components/RubricCards";
 import RubricForm from "@/components/forms/RubricForm";
 import Modal from "@/components/Modal";
 import AssignmentsForm from "@/components/forms/AssignmentsForm";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 import Image from "next/image";
 
-export default function AssignmentsList({title, filters = {}}) {
+export default function AssignmentsList({title, filters = {}, initialSubmissionsId}) {
     const {user, loading} = useAuth();
     const [assignments, setAssignments] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -43,12 +42,12 @@ export default function AssignmentsList({title, filters = {}}) {
         {isLoading ?
             <LoadingIndicator type="line-simple" size="sm" />
             :
-            <AssignmentsTable title={title} assignments={assignments} onLoadAssignments={load}/>
+            <AssignmentsTable title={title} assignments={assignments} onLoadAssignments={load} initialSubmissionsId={initialSubmissionsId}/>
         }
     </>
 }
 
-function AssignmentsTable({title, assignments, onLoadAssignments}) {
+function AssignmentsTable({title, assignments, onLoadAssignments, initialSubmissionsId}) {
     const [openSubmissions, setOpenSubmissions] = useState(false);
     const [openRubric, setOpenRubric] = useState(false);
     const [openNewAssignmentsForm, setOpenNewAssignmentsForm] = useState(false);
@@ -58,10 +57,52 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
     const [deleteAssignmentId, setDeleteAssignmentId] = useState(null);
     const [expandedDescriptionId, setExpandedDescriptionId] = useState(null);
 
+    // Auto-open submissions menu when initialSubmissionsId is provided
+    useEffect(() => {
+        if (initialSubmissionsId && assignments.length > 0) {
+            const match = assignments.find((a) => a.id === initialSubmissionsId);
+            if (match) {
+                setCurrentAssignment(match);
+                setOpenSubmissions(true);
+            }
+        }
+    }, [initialSubmissionsId, assignments]);
+
+    const openSubmissionsMenu = (item) => {
+        setCurrentAssignment(item);
+        setOpenSubmissions(true);
+        window.history.pushState(null, '', `/assignments/${item.id}`);
+    };
+
+    const closeSubmissionsMenu = () => {
+        setCurrentAssignment(null);
+        setOpenSubmissions(false);
+        window.history.pushState(null, '', '/assignments');
+    };
+
     const [sortDescriptor, setSortDescriptor] = useState({
-        column: "status",
+        column: "dueDate",
         direction: "ascending",
     });
+
+    const sortedItems = useMemo(() => {
+        return [...assignments].sort((a, b) => {
+            const first = a[sortDescriptor.column];
+            const second = b[sortDescriptor.column];
+            const dir = sortDescriptor.direction === "descending" ? -1 : 1;
+
+            if (sortDescriptor.column === 'dueDate') {
+                return dir * (new Date(first) - new Date(second));
+            }
+            if (typeof first === "string" && typeof second === "string") {
+                return dir * first.localeCompare(second);
+            }
+            if (typeof first === "number" && typeof second === "number") {
+                return dir * (first - second);
+            }
+            return 0;
+        });
+    }, [sortDescriptor, assignments]);
 
     const onCreateAssignment = async (values) => {
         await createAssignment(values);
@@ -83,33 +124,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
             id: currentAssignment.id,
             rubric: values,
         });
-        setCurrentAssignment(null);
-        setOpenRubric(false);
-        onLoadAssignments();
     }
-
-    const sortedItems = useMemo(() => {
-        return assignments.sort((a, b) => {
-            const first = a[sortDescriptor.column];
-            const second = b[sortDescriptor.column];
-
-            // Compare numbers or booleans
-            if ((typeof first === "number" && typeof second === "number") || (typeof first === "boolean" && typeof second === "boolean")) {
-                return sortDescriptor.direction === "descending" ? second - first : first - second;
-            }
-
-            // Compare strings
-            if (typeof first === "string" && typeof second === "string") {
-                let cmp = first.localeCompare(second);
-                if (sortDescriptor.direction === "descending") {
-                    cmp *= -1;
-                }
-                return cmp;
-            }
-
-            return 0;
-        });
-    }, [sortDescriptor]);
 
     const getSubmissionsCount = async (assignmentId) => {
         const data = await getSubmissionsByAssignment(assignmentId);
@@ -148,10 +163,10 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                 <Table aria-label="Assignments" sortDescriptor={sortDescriptor}
                        onSortChange={setSortDescriptor}>
                     <Table.Header>
-                        <Table.Head id="courseName" label="Course name" isRowHeader allowsSorting={false}/>
-                        <Table.Head id="title" label="Title" allowsSorting={false}/>
+                        <Table.Head id="courseName" label="Course name" isRowHeader allowsSorting/>
+                        <Table.Head id="title" label="Title" allowsSorting/>
                         <Table.Head id="description" label="Description" allowsSorting={false}/>
-                        <Table.Head id="dueDate" label="Due date" allowsSorting={false}/>
+                        <Table.Head id="dueDate" label="Due date" allowsSorting/>
                         <Table.Head id="submissionLink" label="Submission Link"/>
                         <Table.Head id="submissions" label="Submissions"/>
                         <Table.Head id="rubric" label="Rubric"/>
@@ -159,7 +174,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                         <Table.Head id="actions"/>
                     </Table.Header>
 
-                    <Table.Body items={assignments}>
+                    <Table.Body items={sortedItems}>
                         {(item) => (
                             <Table.Row id={item.id}>
                                 <Table.Cell className="whitespace-nowrap">{item.courseName}</Table.Cell>
@@ -193,10 +208,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                                     <Button
                                         color="secondary"
                                         size="sm" className=""
-                                        onClick={() => {
-                                            setOpenSubmissions(true)
-                                            setCurrentAssignment(item)
-                                        }}
+                                        onClick={() => openSubmissionsMenu(item)}
                                     >See {getSubmissionsCount(item.id)} submissions</Button>
                                 </Table.Cell>
                                 <Table.Cell>
@@ -279,10 +291,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments}) {
                 {/*View submissions*/}
                 <SlideoutMenu
                     open={openSubmissions}
-                    onClose={() => {
-                        setCurrentAssignment(null);
-                        setOpenSubmissions(false)
-                    }}
+                    onClose={closeSubmissionsMenu}
                     title={`${currentAssignment?.title} Submissions`}
                     description="View and grade submissions for this assignment."
                     isExpanded={true}

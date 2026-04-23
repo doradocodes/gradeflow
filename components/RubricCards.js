@@ -12,7 +12,7 @@ const COLORS = [
 export default function RubricCards({ rubric, isEditable = false, onDelete = () => {} }) {
     return <>
         <div className={clsx(
-            "grid gap-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))] overflow-y-auto",
+            "grid gap-4 grid-cols-2 overflow-y-auto",
         )}>
             {rubric?.map((r, index) =>
                 <RubricCard

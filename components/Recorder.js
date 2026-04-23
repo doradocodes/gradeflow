@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { useRecorder } from "@/hooks/recorderHooks";
+import { useAudioCache } from "@/hooks/useAudioCache";
 import { Button } from "@/components/base/buttons/button";
 import { Dropdown } from "@/components/base/dropdown/dropdown";
 import {
@@ -11,19 +12,36 @@ import {
     Microphone01,
     PauseSquare, PlaySquare, Recording01,
 } from "@untitledui/icons";
-import {Input} from "@/components/base/input/input";
 
-export default function Recorder({ onEndRecording }) {
+const Recorder = forwardRef(function Recorder({ onEndRecording, onAudioCaptured, assignmentId, submissionId }, ref) {
     const { start, pause, resume, stop, status } = useRecorder();
+    const { loadFromCache } = useAudioCache();
     const [recordingTime, setRecordingTime] = useState(0);
     const [audioURL, setAudioURL] = useState(null);
     const [audioFile, setAudioFile] = useState(null);
     const [devices, setDevices] = useState([]);
     const [selectedDeviceId, setSelectedDeviceId] = useState(null);
     const [isSpeaking, setIsSpeaking] = useState(false);
+    const [isCachedRecording, setIsCachedRecording] = useState(false);
 
     const analyserRef = useRef(null);
     const audioCtxRef = useRef(null);
+
+    // Restore cached recording on mount
+    useEffect(() => {
+        if (!submissionId) return;
+        async function restoreCache() {
+            const cached = await loadFromCache(submissionId);
+            if (cached) {
+                setAudioFile(cached);
+                const url = URL.createObjectURL(cached);
+                setAudioURL(url);
+                setIsCachedRecording(true);
+                onAudioCaptured?.(cached);
+            }
+        }
+        restoreCache();
+    }, [submissionId]);
 
     // Get list of audio input devices
     useEffect(() => {
@@ -63,7 +81,7 @@ export default function Recorder({ onEndRecording }) {
         setupSpeakingDetection(selectedDeviceId);
     };
 
-    const handleStop = async () => {
+    const stopAndGetFile = async () => {
         const blob = await stop();
 
         if (audioCtxRef.current) {
@@ -77,8 +95,37 @@ export default function Recorder({ onEndRecording }) {
 
         setAudioFile(file);
         const url = URL.createObjectURL(file);
-        await setAudioURL(url);
+        setAudioURL(url);
+        setIsCachedRecording(false);
+        onAudioCaptured?.(file);
+
+        return { file, url };
     };
+
+    // Expose stopAndGetFile so parent can call it (e.g. on beforeunload)
+    const statusRef = useRef(status);
+    useEffect(() => { statusRef.current = status; }, [status]);
+
+    useImperativeHandle(ref, () => ({
+        stopAndGetFile,
+        get isRecording() { return statusRef.current === "recording" || statusRef.current === "paused"; },
+    }));
+
+    const handleStop = async () => {
+        await stopAndGetFile();
+    };
+
+    // Cache recording if user navigates away mid-recording
+    const stopAndCacheRef = useRef(stopAndGetFile);
+    useEffect(() => { stopAndCacheRef.current = stopAndGetFile; });
+
+    useEffect(() => {
+        return () => {
+            if (statusRef.current === "recording" || statusRef.current === "paused") {
+                stopAndCacheRef.current();
+            }
+        };
+    }, []);
 
     function secondsToMinutesAndSeconds(seconds) {
         const m = Math.floor(seconds / 60);
@@ -126,11 +173,50 @@ export default function Recorder({ onEndRecording }) {
 
     return (
         <div className="flex flex-col gap-4">
-            {status === "idle" && !audioURL && (
-                <>
-                    {/*<Input label="Audio url" placeholder="Enter url" onChange={(value) => setAudioURL(value)} />*/}
+            {status === "idle" && isCachedRecording && (
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                            Recovered recording
+                        </span>
+                        <button
+                            className="text-xs text-gray-400 hover:text-gray-600 underline"
+                            onClick={() => { setAudioURL(null); setAudioFile(null); setIsCachedRecording(false); }}
+                        >
+                            Discard
+                        </button>
+                    </div>
+
+                    <div className="flex gap-1">
+                        <audio controls src={audioURL} className="w-full" />
+                    </div>
+
                     <Button
                         size="lg"
+                        color="primary-destructive"
+                        className="w-full"
+                        onClick={() => {
+                            setAudioURL(null);
+                            setAudioFile(null);
+                            setIsCachedRecording(false);
+                            handleStart();
+                        }}
+                        iconLeading={<Recording01 />}
+                    >
+                        Record new
+                    </Button>
+
+                    <Button size="lg" className="w-full cursor-pointer" iconLeading={<AnnotationDots data-icon />} onClick={onSubmit}>
+                        Summarize feedback
+                    </Button>
+                </div>
+            )}
+
+            {status === "idle" && !audioURL && (
+                <>
+                    <Button
+                        size="lg"
+                        color="primary-destructive"
                         className="w-full"
                         onClick={handleStart}
                         iconLeading={<Recording01 />}
@@ -156,8 +242,12 @@ export default function Recorder({ onEndRecording }) {
                             color="secondary"
                             iconTrailing={ChevronDown}
                         >
-                            {devices.find((d) => d.deviceId === selectedDeviceId)?.label ||
-                                "Select microphone"}
+                            <span
+                                className="w-full whitespace-nowrap overflow-ellipsis overflow-hidden"
+                            >
+                                {devices.find((d) => d.deviceId === selectedDeviceId)?.label ||
+                                    "Select microphone"}
+                            </span>
                         </Button>
 
                         <Dropdown.Popover>
@@ -206,7 +296,7 @@ export default function Recorder({ onEndRecording }) {
                 </Button>
             }
 
-            {status === "idle" && audioURL && (
+            {status === "idle" && !isCachedRecording && audioURL && (
                 <>
                     <div className="flex gap-2 flex-nowrap items-center">
                         <span>Playback</span>
@@ -225,4 +315,6 @@ export default function Recorder({ onEndRecording }) {
             )}
         </div>
     );
-}
+})
+
+export default Recorder;

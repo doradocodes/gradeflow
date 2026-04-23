@@ -14,14 +14,7 @@ export default function RubricForm({ onSubmit, assignment }) {
 
     useEffect(() => {
         setData(assignment?.rubric);
-        console.log(assignment, data)
     }, [assignment])
-
-    const onUpdateRubric = async (e) => {
-        e.preventDefault();
-        console.log('Updating rubric:', data);
-        await onSubmit(data);
-    }
 
     const onAddCategory = (e) => {
         e.preventDefault();
@@ -30,14 +23,17 @@ export default function RubricForm({ onSubmit, assignment }) {
             maxPoints: parseFloat(formRef.current.elements.maxPoints.value),
             criteria: formRef.current.elements.criteria.value,
         };
-        setData([...data, newCategory]);
+        const updated = [...data, newCategory];
+        setData(updated);
         setIsAddingRubric(false);
         formRef.current.reset();
+        onSubmit(updated);
     }
 
     const onDeleteCategory = (categoryName) => {
-        const newData = data.filter(r => r.categoryName !== categoryName);
-        setData(newData);
+        const updated = data.filter(r => r.categoryName !== categoryName);
+        setData(updated);
+        onSubmit(updated);
     }
 
     return <>
@@ -57,7 +53,7 @@ export default function RubricForm({ onSubmit, assignment }) {
                             <Input isRequired label="Max Points" placeholder="Max Points" tooltip="The maximum points for this category." name="maxPoints" type="number"/>
                             <TextArea isRequired placeholder="A description of the category criteria (in bullet points)." label="Description" rows={5} name="criteria" />
                         </div>
-                        <Button iconLeading={PlusCircle} onClick={onAddCategory}>Create category</Button>
+                        <Button iconLeading={PlusCircle} onClick={onAddCategory}>Save category</Button>
                     </form>
                 </div>
                 :
@@ -65,6 +61,5 @@ export default function RubricForm({ onSubmit, assignment }) {
                         iconLeading={Plus}>Add category</Button>
             }
         </div>
-        <Button color={"primary"} className="mt-6" onClick={onUpdateRubric}>Update rubric</Button>
     </>
 }
