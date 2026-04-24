@@ -119,6 +119,7 @@ interface BadgeProps<T extends BadgeTypes> {
     color?: BadgeColor<T>;
     children: ReactNode;
     className?: string;
+    onClick?: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 export const Badge = <T extends BadgeTypes>(props: BadgeProps<T>) => {
@@ -142,7 +143,7 @@ export const Badge = <T extends BadgeTypes>(props: BadgeProps<T>) => {
         [badgeTypes.badgeModern]: badgeSizes,
     };
 
-    return <span className={cx(colors.common, sizes[type][size], colors.styles[color].root, props.className)}>{children}</span>;
+    return <span className={cx(colors.common, sizes[type][size], colors.styles[color].root, props.className)} onClick={props.onClick}>{children}</span>;
 };
 
 interface BadgeWithDotProps<T extends BadgeTypes> {

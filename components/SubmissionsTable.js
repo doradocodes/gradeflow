@@ -197,10 +197,10 @@ function GradeCell({ item, setOpenFeedback }) {
         }, 0)
     }
 
-    return <div className="flex gap-2 items-center">
+    return <div className="flex items-center">
         {item.feedback && <>
             <Button
-                color="primary"
+                color="secondary"
                 size="sm"
                 onClick={setOpenFeedback}
                 iconTrailing={<CheckVerified01 size={16} />}
@@ -217,7 +217,7 @@ function GradeCell({ item, setOpenFeedback }) {
             href={`/submissions/${item.id}`}
             as={Link}
         >
-            Grade {item.feedback && 'again'}
+            {item.feedback ? 'Regrade' : 'Grade'}
         </Button>
     </div>
 }
