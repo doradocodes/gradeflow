@@ -3,6 +3,11 @@
 import { cx } from "@/utils/cx";
 
 const styles = {
+    xs: {
+        root: "gap-3",
+        label: "text-sm font-medium",
+        spinner: 'size-5',
+    },
     sm: {
         root: "gap-4",
         label: "text-sm font-medium",

@@ -44,9 +44,19 @@ export async function POST(req) {
     }
 
     // Step 2: Define a summarization prompt.
+    const gradingScale = body.gradingScale ?? 'medium';
+    const gradingScaleInstructions = {
+        lenient:  'Be lenient in your grading — give the student the benefit of the doubt, lean towards higher point estimates, and focus feedback on encouragement and what went well.',
+        medium:   'Be balanced in your grading — award points fairly based on what was demonstrated, noting both strengths and areas for improvement.',
+        strict:   'Be strict in your grading — only award full points when the criteria are clearly and thoroughly met, and be direct about gaps or missing content.',
+    };
+    const gradingInstruction = gradingScaleInstructions[gradingScale] ?? gradingScaleInstructions.medium;
+
     const prompt = body.rubric ? `
     I am a teacher evaluating a student's project presentation. Summarize the following transcript by categorizing the content under the given grading rubric: ${body.rubric}
     
+    Grading scale: ${gradingScale}. ${gradingInstruction}
+
     For each rubric category, I want a short summary (2–3 sentences) and estimate the points earned for that category.
     If a category is not addressed in the transcript, explicitly state "Not addressed.". 
     The summary should be written from the perspective of the teacher, who is writing feedback to the student. The summary should be in the tone of the speaker from the audio.
@@ -62,6 +72,8 @@ export async function POST(req) {
         ...
     ]}
     ` : 'Create a summary of the following transcript:';
+
+    console.log(prompt);
 
     // Step 3: Send transcript to LLM Gateway.
     let llmResponse;

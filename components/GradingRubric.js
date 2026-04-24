@@ -56,7 +56,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         return arr.join('\n');
     }
 
-    const handleTranscribe = useCallback(async (audioUrl, rubric) => {
+    const handleTranscribe = useCallback(async (audioUrl, rubric, gradingScale) => {
         try {
             // Summarize the audio using the API
             const res = await fetch("/api/summarize", {
@@ -65,6 +65,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 body: JSON.stringify({
                     audioUrl,
                     rubric,
+                    gradingScale: gradingScale ?? 'medium',
                 }),
             });
 
@@ -121,7 +122,8 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         }
 
         const rubricString = getRubricString(assignmentRef.current?.rubric);
-        await handleTranscribe(url, rubricString);
+        const gradingScale = assignmentRef.current?.gradingScale ?? 'medium';
+        await handleTranscribe(url, rubricString, gradingScale);
     }, [handleTranscribe]);
 
     // Memoize the Recorder component to prevent re-renders when collapsed changes
@@ -179,9 +181,10 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         </div>
         <div className="p-4">
             {isTranscribing ?
-                <Button size="lg" isDisabled={true} className="w-full cursor-pointer" iconLeading={<LoadingIndicator type="line-simple" size="sm" />} aria-label="Transcribing">
-                    Transcribing...
-                </Button>
+                <div className={"flex gap-2 justify-center align-middle py-1"}>
+                    <LoadingIndicator type="line-simple" size="xs" />
+                    <span className={"text-gray-500 italic"}>Transcribing...</span>
+                </div>
                 :
                 recorderElement
             }

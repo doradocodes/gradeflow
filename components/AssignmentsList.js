@@ -22,6 +22,7 @@ import Modal from "@/components/Modal";
 import AssignmentsForm from "@/components/forms/AssignmentsForm";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
 import Image from "next/image";
+import {GradingScaleSlider} from "@/components/base/slider/grading-scale-slider";
 
 export default function AssignmentsList({title, filters = {}, initialSubmissionsId}) {
     const {user, loading} = useAuth();
@@ -126,6 +127,11 @@ function AssignmentsTable({title, assignments, onLoadAssignments, initialSubmiss
         });
     }
 
+    const onUpdateGradingScale = async (assignmentId, scale) => {
+        await updateAssignment(assignmentId, { gradingScale: scale });
+        onLoadAssignments();
+    }
+
     const getSubmissionsCount = async (assignmentId) => {
         const data = await getSubmissionsByAssignment(assignmentId);
         return data.length;
@@ -169,6 +175,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments, initialSubmiss
                         <Table.Head id="dueDate" label="Due date" allowsSorting/>
                         <Table.Head id="submissionLink" label="Submission Link"/>
                         <Table.Head id="submissions" label="Submissions"/>
+                        <Table.Head id="gradingScale" label="Grading scale" allowsSorting={false}/>
                         <Table.Head id="rubric" label="Rubric"/>
                         <Table.Head id="deliverables" label="Deliverables"/>
                         <Table.Head id="actions"/>
@@ -210,6 +217,12 @@ function AssignmentsTable({title, assignments, onLoadAssignments, initialSubmiss
                                         size="sm" className=""
                                         onClick={() => openSubmissionsMenu(item)}
                                     >See {getSubmissionsCount(item.id)} submissions</Button>
+                                </Table.Cell>
+                                <Table.Cell>
+                                    <GradingScaleSlider
+                                        value={item.gradingScale ?? 'medium'}
+                                        onChange={(scale) => onUpdateGradingScale(item.id, scale)}
+                                    />
                                 </Table.Cell>
                                 <Table.Cell>
                                     <Button
