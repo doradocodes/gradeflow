@@ -11,9 +11,13 @@ import {
     CheckCircleBroken,
     ChevronDown,
     ChevronUp,
+    Expand06,
     HelpCircle,
+    Minimize02,
     MagicWand02
 } from "@untitledui/icons";
+import { usePictureInPicture } from "@/hooks/usePictureInPicture";
+import { Tooltip } from "@/components/base/tooltip/tooltip";
 import clsx from "clsx";
 import {Dropdown} from "@/components/base/dropdown/dropdown";
 import {LoadingIndicator} from "@/components/application/loading-indicator/loading-indicator";
@@ -26,7 +30,17 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
     const [error, setError] = useState(null);
     const recorderMountedRef = useRef(false);
     const assignmentRef = useRef(null);
+    const containerRef = useRef(null);
     const { deleteFromCache } = useAudioCache();
+    const { isPip, isSupported: isPipSupported, openPip, closePip } = usePictureInPicture();
+
+    const handleTogglePip = async () => {
+        if (isPip) {
+            closePip();
+        } else {
+            await openPip(containerRef, { width: 440, height: 800 });
+        }
+    };
 
     // Keep assignment ref in sync
     useEffect(() => {
@@ -133,20 +147,37 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
 
     if (!assignment) return null;
 
-    return <div className={clsx([
-        "flex flex-col fixed z-20 top-20 right-2 shadow-md rounded-lg bg-white max-w-lg transition-all duration-300 w-1/3 min-w-[400px]",
-        collapsed ? "max-h-16 overflow-hidden" : "max-h-[800px]"
+    return <div ref={containerRef} className={clsx([
+        "grid grid-rows-[auto_auto_1fr_auto] z-20 shadow-md rounded-lg bg-white transition-all duration-300",
+        isPip
+            ? "w-full h-full max-h-full max-w-full rounded-none"
+            : "fixed top-20 right-2 w-[400px]",
+        !isPip && collapsed ? "max-h-16 overflow-hidden" : "h-[800px]",
     ])}>
         <div className="p-4 border-b border-gray-200 ">
             <div className="flex gap-1 justify-between items-center">
                 <h2 className="text-1xl font-bold">{assignment?.courseName} - {assignment?.title} - {studentName}</h2>
-                {!collapsed ? <Button color="tertiary" size="sm" iconLeading={<ChevronDown data-icon />} aria-label="Expand" onClick={() => setCollapsed(true)} />
-                    :
-                    <Button color="tertiary" size="sm" iconLeading={<ChevronUp data-icon />} aria-label="Collapse" onClick={() => setCollapsed(false)} />
-                }
+                <div className="flex gap-1 items-center">
+                    {isPipSupported && (
+                        <Tooltip title={isPip ? "Close window" : "Open as window"} placement="top" arrow={true}>
+                            <Button
+                                color="tertiary"
+                                size="sm"
+                                iconLeading={isPip ? <Minimize02 data-icon /> : <Expand06 data-icon />}
+                                aria-label={isPip ? "Close Picture-in-Picture" : "Open Picture-in-Picture"}
+                                onClick={handleTogglePip}
+                            />
+                        </Tooltip>
+                    )}
+                    {!isPip && (
+                        !collapsed
+                            ? <Button color="tertiary" size="sm" iconLeading={<ChevronDown data-icon />} aria-label="Collapse" onClick={() => setCollapsed(true)} />
+                            : <Button color="tertiary" size="sm" iconLeading={<ChevronUp data-icon />} aria-label="Expand" onClick={() => setCollapsed(false)} />
+                    )}
+                </div>
             </div>
         </div>
-        <div className={clsx("transition-opacity duration-300", collapsed ? "opacity-0 pointer-events-none" : "opacity-100")}>
+        <div className={clsx("transition-opacity duration-300", (!isPip && collapsed) ? "opacity-0 pointer-events-none" : "opacity-100")}>
             <div className="p-4 flex gap-2 items-center justify-between">
                 <h3 className="font-bold text-gray-500">Viewing file</h3>
                 <Dropdown.Root>
@@ -175,7 +206,9 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                     </Dropdown.Popover>
                 </Dropdown.Root>
             </div>
-            <div className="px-4 max-h-96 overflow-y-auto">
+        </div>
+        <div className={clsx("transition-opacity duration-300 flex-1 overflow-y-auto max-h-[570px]", (!isPip && collapsed) ? "opacity-0 pointer-events-none" : "opacity-100")}>
+            <div className="px-4">
                 <RubricCards rubric={assignment.rubric} />
             </div>
         </div>
@@ -198,7 +231,6 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 <Button color="tertiary" className="w-full color-gray-500 mt-2" onClick={() => onOpenSummary(true)}>View completed summary</Button>
             }
         </div>
-
     </div>
 }
 
