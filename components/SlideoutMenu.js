@@ -36,12 +36,12 @@ export default function SlideoutMenu({open, onClose, title, description, childre
             ></div>
             <div
                 className={clsx(
-                    "absolute z-30 top-0 right-0 h-full w-1/3 bg-white transition-all duration-300 overflow-y-auto flex flex-col",
+                    "absolute z-30 top-0 right-0 h-full w-1/3 bg-white transition-all duration-300 overflow-y-auto flex flex-col gap-4 p-4",
                     open ? "translate-x-0" : "translate-x-full",
                     expanded ? "w-11/12" : "w-1/3"
                 )}
             >
-                <div className="flex justify-between p-4">
+                <div className="flex justify-between">
                     <div>
                         <h2 className="text-xl font-bold mb-1">{title}</h2>
                         <p className="text-gray-500">{description}</p>
@@ -51,7 +51,7 @@ export default function SlideoutMenu({open, onClose, title, description, childre
                         <ButtonUtility size="sm" color="tertiary" icon={<XClose size={15} />} onClick={() => onClose(false)}/>
                     </div>
                 </div>
-                <div className="h-full overflow-y-auto p-4">
+                <div className="h-full overflow-y-auto">
                     {children}
                 </div>
 

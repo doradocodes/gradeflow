@@ -26,10 +26,6 @@ export default function AssignmentsPage() {
         },
     ];
 
-    const onTabChange = (key) => {
-        setSelectedTabIndex(key);
-    }
-
     return <ProtectedRoute>
         <div className="w-full max-w-container px-4 py-8 md:px-8 mx-auto z-10">
             <h1 className="text-2xl font-bold mb-2">Assignments</h1>
@@ -42,7 +38,9 @@ export default function AssignmentsPage() {
                     options={tabs.map((tab) => ({label: tab.label, value: tab.id}))}
                     className="w-80 md:hidden"
                 />
-                <Tabs selectedKey={selectedTabIndex} onSelectionChange={onTabChange} className="w-max max-md:hidden">
+                <Tabs selectedKey={selectedTabIndex} onSelectionChange={(key) => {
+                    setSelectedTabIndex(key);
+                }} className="w-max max-md:hidden">
                     <Tabs.List type="button-border" items={tabs}>
                         {(tab) => <Tabs.Item {...tab} />}
                     </Tabs.List>

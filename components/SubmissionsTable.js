@@ -182,7 +182,7 @@ export default function SubmissionsTable({ assignment }) {
         <SlideoutMenu
             open={openFeedback}
             onClose={() => setOpenFeedback(false)}
-            title={`Feedback for ${currentSubmission?.studentName}`}
+            title={`${assignment.title} Feedback`}
             isExpanded={true}
         >
             <FeedbackSummary submissionId={currentSubmission?.id} assignment={assignment} />

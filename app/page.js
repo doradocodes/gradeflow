@@ -7,10 +7,19 @@ import Footer from "@/components/Footer";
 import gsap from "gsap";
 import Image from "next/image";
 import {useEffect, useRef} from "react";
+import {useAuth} from "@/components/AuthProvider";
+import {redirect} from "next/navigation";
 
 export default function HomePage() {
     const micImage = useRef(null);
     const speechImg = useRef(null);
+    const { user, loading } = useAuth();
+
+    useEffect(() => {
+        if (!loading && user) {
+            redirect('/assignments');
+        }
+    }, [user, loading]);
 
     useEffect(() => {
         gsap.to(micImage.current, {

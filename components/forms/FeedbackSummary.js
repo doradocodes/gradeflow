@@ -1,20 +1,26 @@
 import {useEffect, useRef, useState} from "react";
-import {ChevronDown, ChevronUp, MagicWand02, Pencil01, Save01, Share01, Share06, Voicemail} from "@untitledui/icons";
+import {ChevronDown, ChevronUp, MagicWand02, Pencil01, Save01, Share06, Voicemail} from "@untitledui/icons";
 import clsx from "clsx";
 import {Button} from "@/components/base/buttons/button";
+import {Tabs} from "@/components/application/tabs/tabs";
+import {Breadcrumbs} from "@/components/application/breadcrumbs/breadcrumbs";
 import {TextArea} from "@/components/base/textarea/textarea";
 import {Input} from "@/components/base/input/input";
 import {getSubmission, updateSubmission} from "@/utils/firestore";
+import {NativeSelect} from "@/components/base/select/select-native";
 
-export default function FeedbackSummary({ submissionId, assignment }) {
+export default function FeedbackSummary({submissionId, assignment}) {
     const [openTranscript, setOpenTranscript] = useState(false);
     const [feedback, setFeedback] = useState({});
     const [studentName, setStudentName] = useState('');
+    const [studentEmail, setStudentEmail] = useState('');
     const [isCopied, setIsCopied] = useState(false);
+    const [selectedTabIndex, setSelectedTabIndex] = useState("summary");
 
     const load = async () => {
         const submission = await getSubmission(submissionId);
         setStudentName(submission.studentName || '');
+        setStudentEmail(submission.studentEmail || '');
         setFeedback(submission.feedback || {});
     };
 
@@ -48,7 +54,7 @@ export default function FeedbackSummary({ submissionId, assignment }) {
 
     const formatSummary = (summary) => {
         return summary.map((item, index) => {
-            return <Category data={item} onSave={(updatedValues) => handleEdit(updatedValues, index)} />;
+            return <Category data={item} onSave={(updatedValues) => handleEdit(updatedValues, index)}/>;
         });
     }
 
@@ -81,53 +87,70 @@ export default function FeedbackSummary({ submissionId, assignment }) {
         return null;
     }
 
+
+    const tabs = [
+        {
+            id: "summary", label: "Summary",
+        },
+        {
+            id: "transcript", label: "Transcript",
+        },
+    ];
+
     return <>
-        {/*Transcript*/}
-        <div className="border-b border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-                <h2 className="text-2xl font-bold my-4"><Voicemail className=" inline-block mr-1" />Transcript</h2>
-                {openTranscript ?
-                    <ChevronUp data-icon className="text-gray-400" onClick={() => setOpenTranscript(false)}/>
-                    :
-                    <ChevronDown data-icon className="text-gray-400" onClick={() => setOpenTranscript(true)}/>}
-            </div>
-            <div className={clsx(   [
-                openTranscript ? 'h-auto' : 'h-0 overflow-hidden',
-                'transition-all duration-300'
-            ])}>
-                <p className="mb-4 italic text-gray-400">{feedback.transcript}</p>
-            </div>
+        <Breadcrumbs className="mb-4" items={[
+            { label: assignment.title, href: `/assignments/${assignment.id}` },
+            { label: `${studentName} (${studentEmail})` },
+        ]} />
+
+        <div className="mb-4 flex items-center justify-between">
+            <NativeSelect
+                aria-label="Tabs"
+                value={selectedTabIndex}
+                onChange={(event) => setSelectedTabIndex(event.target.value)}
+                options={tabs.map((tab) => ({label: tab.label, value: tab.id}))}
+                className="w-80 md:hidden"
+            />
+            <Tabs selectedKey={selectedTabIndex} onSelectionChange={(key) => {
+                setSelectedTabIndex(key);
+            }} className="w-max max-md:hidden">
+                <Tabs.List type="button-border" items={tabs}>
+                    {(tab) => <Tabs.Item {...tab} />}
+                </Tabs.List>
+            </Tabs>
         </div>
+
+        {/*Transcript*/}
+        {selectedTabIndex === "transcript" && (<div className="border border-gray-200 rounded-xl p-6">
+            <p className="italic text-gray-400">{feedback.transcript}</p>
+        </div>)}
 
         {/*Summary*/}
-        <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold my-4"><MagicWand02 className=" inline-block" /> Summary</h2>
-        </div>
-        {feedback.summary && <>
-            <div>{formatSummary(feedback.summary)}</div>
-            <div className="flex justify-between border-t border-gray-300 py-4">
-                <p className="text-xl font-bold">Final score</p>
-                <p className="text-xl font-bold text-right">{getFinalPoints(feedback.summary)} points</p>
-            </div>
-        </>
-        }
+        {selectedTabIndex === "summary" && (<div className="border border-gray-200 rounded-xl p-6">
+            {feedback.summary && <>
+                <div className="flex flex-col gap-4">{formatSummary(feedback.summary)}</div>
+                <div className="flex justify-between border-t border-gray-300 py-4">
+                    <p className="text-xl font-bold">Final score</p>
+                    <p className="text-xl font-bold text-right">{getFinalPoints(feedback.summary)} points</p>
+                </div>
+            </>
+            }
 
-        <div className="mt-6">
-            <div>
+            <div className="">
                 <Button
                     className="w-full mb-2"
                     color="primary"
                     size="lg"
-                    iconLeading={<Share06 data-icon />}
+                    iconLeading={<Share06 data-icon/>}
                     onClick={() => onShareFeedback(feedback.summary)}
                 >Share with student</Button>
                 {isCopied && <p className="text-center text-gray-400">Copied to clipboard!</p>}
             </div>
-        </div>
+        </div>)}
     </>
 }
 
-function Category({ data, onSave }) {
+function Category({data, onSave}) {
     const [isEditing, setIsEditing] = useState(false);
 
     const formRef = useRef(null);
@@ -150,20 +173,21 @@ function Category({ data, onSave }) {
         setIsEditing(true);
     }
 
-    return <form ref={formRef} key={data?.category} className="mb-8">
+    return <form ref={formRef} key={data?.category} className="">
         <div className="flex items-center justify-between mb-2">
             <div className="flex gap-2 w-full">
                 {isEditing ?
                     <>
                         <Input name="category" type="text" size="sm" className="w-full" defaultValue={data.category}/>
                         <div className="flex gap-2">
-                            <Input name="estimated_points" type="number" size="sm" defaultValue={data.estimated_points}/>
+                            <Input name="estimated_points" type="number" size="sm"
+                                   defaultValue={data.estimated_points}/>
                             <Button
                                 type="submit"
                                 className="w-full"
                                 color="tertiary"
                                 size="sm"
-                                iconLeading={<Save01 data-icon />}
+                                iconLeading={<Save01 data-icon/>}
                                 onClick={handleSave}
                             ></Button>
                         </div>
@@ -177,7 +201,7 @@ function Category({ data, onSave }) {
                                 type="button"
                                 color="tertiary"
                                 size="sm"
-                                iconLeading={<Pencil01 data-icon />}
+                                iconLeading={<Pencil01 data-icon/>}
                                 onClick={handleEdit}
                             ></Button>
                         </div>
@@ -186,7 +210,7 @@ function Category({ data, onSave }) {
             </div>
         </div>
         {isEditing ?
-            <TextArea name="summary" rows={5} defaultValue={data.summary} />
+            <TextArea name="summary" rows={5} defaultValue={data.summary}/>
             :
             <p className="text-md min-h-20">{data.summary}</p>
         }
