@@ -101,7 +101,7 @@ export default function SubmissionsTable({ assignment }) {
     </div>
 
     return <>
-        <TableCard.Root className="mb-4">
+        <TableCard.Root className="mb-4 w-full">
             <TableCard.Header
                 title="Submissions"
                 badge={`${submissions.length} submissions / ${getGradedCount(submissions)} graded`}
