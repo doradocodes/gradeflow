@@ -1,11 +1,15 @@
 'use client';
 
-import { Slider } from "@/components/base/slider/slider";
-
 const NOTCHES = ['lenient', 'medium', 'strict'];
 
+const NOTCH_COLORS = {
+    lenient: { active: 'bg-green-600 text-white', inactive: 'hover:bg-green-50' },
+    medium:  { active: 'bg-yellow-500 text-white', inactive: 'hover:bg-yellow-50' },
+    strict:  { active: 'bg-red-600 text-white', inactive: 'hover:bg-red-50' },
+};
+
 /**
- * GradingScaleSlider — a 3-notch slider for choosing grading leniency.
+ * GradingScaleSlider — a 3-option button group for choosing grading leniency.
  *
  * Props:
  *   value      – 'lenient' | 'medium' | 'strict'
@@ -13,36 +17,31 @@ const NOTCHES = ['lenient', 'medium', 'strict'];
  *   disabled   – boolean
  */
 export function GradingScaleSlider({ value = 'medium', onChange, disabled = false }) {
-    const index = Math.max(0, NOTCHES.indexOf(value) !== -1 ? NOTCHES.indexOf(value) : 1);
-
     return (
-        <div className="flex flex-col gap-0 min-w-[140px]">
-            <Slider
-                minValue={0}
-                maxValue={2}
-                step={1}
-                value={index}
-                isDisabled={disabled}
-                onChange={(val) => onChange?.(NOTCHES[val])}
-                labelPosition="default"
-                formatOptions={undefined}
-                labelFormatter={(val) => NOTCHES[val].charAt(0).toUpperCase() + NOTCHES[val].slice(1)}
-            />
-            <div className="flex justify-between -mt-1">
-                {NOTCHES.map((notch, i) => (
-                    <span
+        <div className="flex rounded-lg overflow-hidden border border-gray-200 w-max">
+            {NOTCHES.map((notch, i) => {
+                const isSelected = value === notch;
+                return (
+                    <button
                         key={notch}
-                        className={`text-[10px] font-medium capitalize transition-colors ${
-                            index === i ? 'text-primary font-semibold' : 'text-tertiary'
-                        }`}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => onChange?.(notch)}
+                        className={[
+                            'px-3 py-1.5 text-sm font-medium capitalize transition-colors cursor-pointer',
+                            i > 0 && 'border-l border-gray-200',
+                            isSelected
+                                ? NOTCH_COLORS[notch].active
+                                : `bg-white ${NOTCH_COLORS[notch].inactive}`,
+                            disabled && 'cursor-not-allowed opacity-50',
+                        ].filter(Boolean).join(' ')}
                     >
                         {notch}
-                    </span>
-                ))}
-            </div>
+                    </button>
+                );
+            })}
         </div>
     );
 }
 
 export { NOTCHES as GRADING_SCALE_NOTCHES }; // eslint-disable-line
-

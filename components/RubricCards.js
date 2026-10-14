@@ -9,10 +9,10 @@ const COLORS = [
     'bg-sky-100 text-sky-800',
 ];
 
-export default function RubricCards({ rubric, isEditable = false, onDelete = () => {} }) {
+export default function RubricCards({ rubric, isEditable = false, onDelete = () => {}, onEdit = () => {} }) {
     return <>
         <div className={clsx(
-            "grid gap-4 grid-cols-2 overflow-y-auto",
+            "grid gap-4 grid-cols-2 overflow-y-auto items-start",
         )}>
             {rubric?.map((r, index) =>
                 <RubricCard
@@ -20,9 +20,11 @@ export default function RubricCards({ rubric, isEditable = false, onDelete = () 
                     categoryName={r.categoryName}
                     points={r.maxPoints}
                     criteria={r.criteria}
+                    scoringBands={r.scoringBands}
                     color={COLORS[index % COLORS.length]}
                     isEditable={isEditable}
                     onDelete={() => onDelete(r.categoryName)}
+                    onEdit={(originalName, updated) => onEdit(originalName, updated)}
                 ></RubricCard>)
             }
         </div>

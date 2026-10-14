@@ -62,15 +62,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         load();
     }, []);
 
-    const getRubricString = (rubric) => {
-        if (!rubric) return '';
-        let arr = rubric.map((r, i) => {
-            return `${i + 1}. ${r.categoryName}: ${r.criteria} (${r.maxPoints} points)`
-        });
-        return arr.join('\n');
-    }
-
-    const handleTranscribe = useCallback(async (audioUrl, rubric, gradingScale) => {
+    const handleTranscribe = useCallback(async (audioUrl, rubric) => {
         try {
             // Summarize the audio using the API
             const res = await fetch("/api/summarize", {
@@ -79,7 +71,6 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
                 body: JSON.stringify({
                     audioUrl,
                     rubric,
-                    gradingScale: gradingScale ?? 'medium',
                 }),
             });
 
@@ -135,9 +126,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
             }
         }
 
-        const rubricString = getRubricString(assignmentRef.current?.rubric);
-        const gradingScale = assignmentRef.current?.gradingScale ?? 'medium';
-        await handleTranscribe(url, rubricString, gradingScale);
+        await handleTranscribe(url, assignmentRef.current?.rubric ?? []);
     }, [handleTranscribe]);
 
     // Memoize the Recorder component to prevent re-renders when collapsed changes
@@ -151,7 +140,7 @@ export default function GradingRubric({ submission, assignmentId, studentName, c
         "grid grid-rows-[auto_auto_1fr_auto] z-20 shadow-md rounded-lg bg-white transition-all duration-300",
         isPip
             ? "w-full h-full max-h-full max-w-full rounded-none"
-            : "fixed top-20 right-2 w-[400px]",
+            : "fixed top-20 right-2 w-[450px]",
         !isPip && collapsed ? "max-h-16 overflow-hidden" : "h-[800px]",
     ])}>
         <div className="p-4 border-b border-gray-200 ">

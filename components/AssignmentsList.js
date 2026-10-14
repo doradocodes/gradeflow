@@ -175,7 +175,7 @@ function AssignmentsTable({title, assignments, onLoadAssignments, initialSubmiss
                         <Table.Head id="dueDate" label="Due date" allowsSorting/>
                         <Table.Head id="submissionLink" label="Submission Link"/>
                         <Table.Head id="submissions" label="Submissions"/>
-                        <Table.Head id="gradingScale" label="Grading scale" allowsSorting={false}/>
+                        {/*<Table.Head id="gradingScale" label="Grading scale" allowsSorting={false}/>*/}
                         <Table.Head id="rubric" label="Rubric"/>
                         <Table.Head id="deliverables" label="Deliverables"/>
                         <Table.Head id="actions"/>
@@ -218,12 +218,12 @@ function AssignmentsTable({title, assignments, onLoadAssignments, initialSubmiss
                                         onClick={() => openSubmissionsMenu(item)}
                                     >See {getSubmissionsCount(item.id)} submissions</Button>
                                 </Table.Cell>
-                                <Table.Cell>
-                                    <GradingScaleSlider
-                                        value={item.gradingScale ?? 'medium'}
-                                        onChange={(scale) => onUpdateGradingScale(item.id, scale)}
-                                    />
-                                </Table.Cell>
+                                {/*<Table.Cell>*/}
+                                {/*    <GradingScaleSlider*/}
+                                {/*        value={item.gradingScale ?? 'medium'}*/}
+                                {/*        onChange={(scale) => onUpdateGradingScale(item.id, scale)}*/}
+                                {/*    />*/}
+                                {/*</Table.Cell>*/}
                                 <Table.Cell>
                                     <Button
                                         color="secondary"

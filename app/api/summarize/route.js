@@ -44,33 +44,38 @@ export async function POST(req) {
     }
 
     // Step 2: Define a summarization prompt.
-    const gradingScale = body.gradingScale ?? 'medium';
-    const gradingScaleInstructions = {
-        lenient:  'Be lenient in your grading — give the student the benefit of the doubt, lean towards higher point estimates, and focus feedback on encouragement and what went well.',
-        medium:   'Be balanced in your grading — award points fairly based on what was demonstrated, noting both strengths and areas for improvement.',
-        strict:   'Be strict in your grading — only award full points when the criteria are clearly and thoroughly met, and be direct about gaps or missing content.',
+    const rubric = body.rubric ?? [];
+
+    const formatRubricForPrompt = (rubric) => {
+        return rubric.map((r, i) => {
+            let entry = `${i + 1}. ${r.categoryName} (${r.maxPoints} points)\n   Criteria: ${r.criteria}`;
+            if (r.scoringBands?.length) {
+                const bands = r.scoringBands.map(b => `     ${b.min}–${b.max} pts: ${b.description}`).join('\n');
+                entry += `\n   Scoring bands:\n${bands}`;
+            }
+            return entry;
+        }).join('\n\n');
     };
-    const gradingInstruction = gradingScaleInstructions[gradingScale] ?? gradingScaleInstructions.medium;
 
-    const prompt = body.rubric ? `
-    I am a teacher evaluating a student's project presentation. Summarize the following transcript by categorizing the content under the given grading rubric: ${body.rubric}
-    
-    Grading scale: ${gradingScale}. ${gradingInstruction}
+    const prompt = rubric.length ? `
+    I am a teacher evaluating a student's project presentation. Summarize the following transcript by categorizing the content under the given grading rubric.
 
-    For each rubric category, I want a short summary (2–3 sentences) and estimate the points earned for that category.
-    If a category is not addressed in the transcript, explicitly state "Not addressed.". 
-    The summary should be written from the perspective of the teacher, who is writing feedback to the student. The summary should be in the tone of the speaker from the audio.
+    Rubric:
+    ${formatRubricForPrompt(rubric)}
+
+    For each rubric category, provide a short summary (2–3 sentences) and estimate the points earned based on the scoring bands provided. Use the scoring bands to determine the appropriate point range — pick the specific value within that band that best reflects the student's performance.
+    If a category is not addressed in the transcript, explicitly state "Not addressed." and assign 0 points.
+    The summary should be written from the perspective of the teacher, writing feedback to the student. Match the tone of the speaker from the audio.
     The category name should match exactly as given in the rubric.
-    The summary should be in JSON format with the following structure:
-    {[
+    Respond only with JSON in the following structure:
+    [
         {
             "category": "Category name",
             "estimated_points": 10,
             "max_points": 10,
             "summary": "The summary of the category"
         }
-        ...
-    ]}
+    ]
     ` : 'Create a summary of the following transcript:';
 
     console.log(prompt);
